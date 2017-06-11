@@ -17,6 +17,7 @@ import os
 import time
 import json
 import random
+import logging
 import argparse
 import multiprocessing
 import sys
@@ -34,7 +35,7 @@ def get_current_time():
         ttime=time.localtime(time.mktime(ltime)+ 8* 60* 60) 
         return ttime
     except Exception, e:
-        #print 'Exp {0} : {1}'.format(FuncName(), e)
+        logging.info('Exp {0} : {1}'.format(FuncName(), e))
         return None
 
 
@@ -114,20 +115,20 @@ class JDWrapper(object):
             resp_text = resp_text[1:-1]
         
         for k,v in json.loads(resp_text).items():
-            print u'%s : %s' % (k, v)
+            logging.info(u'%s : %s' % (k, v))
 
     @staticmethod
     def response_status(resp):
         if resp.status_code != requests.codes.OK:
-            print 'Status: %u, Url: %s' % (resp.status_code, resp.url)
+            logging.info('Status: %u, Url: %s' % (resp.status_code, resp.url))
             return False
         return True
 
     def login_by_QR(self):
         # jd login by QR code
         try:
-            print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-            print u'{0} > 请打开京东手机客户端，准备扫码登陆:'.format(time.ctime())
+            logging.info('+++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            logging.info(u'{0} > 请打开京东手机客户端，准备扫码登陆:'.format(time.ctime()))
 
             urls = (
                 'https://passport.jd.com/new/login.aspx',
@@ -142,7 +143,7 @@ class JDWrapper(object):
                 headers = self.headers
             )
             if resp.status_code != requests.codes.OK:
-                print u'获取登录页失败: %u' % resp.status_code
+                logging.info(u'获取登录页失败: %u' % resp.status_code)
                 return False
 
             ## save cookies
@@ -162,7 +163,7 @@ class JDWrapper(object):
                 }
             )
             if resp.status_code != requests.codes.OK:
-                print u'获取二维码失败: %u' % resp.status_code
+                logging.info(u'获取二维码失败: %u' % resp.status_code)
                 return False
 
             ## save cookies
@@ -208,15 +209,15 @@ class JDWrapper(object):
                 rs = json.loads(resp.text[n1+1:n2])
 
                 if rs['code'] == 200:
-                    print u'{} : {}'.format(rs['code'], rs['ticket'])
+                    logging.info(u'{} : {}'.format(rs['code'], rs['ticket']))
                     qr_ticket = rs['ticket']
                     break
                 else:
-                    print u'{} : {}'.format(rs['code'], rs['msg'])
+                    logging.info(u'{} : {}'.format(rs['code'], rs['msg']))
                     time.sleep(3)
             
             if not qr_ticket:
-                print u'二维码登陆失败'
+                logging.info(u'二维码登陆失败')
                 return False
             
             # step 4: validate scan result
@@ -230,7 +231,7 @@ class JDWrapper(object):
                 params = {'t' : qr_ticket },
             )
             if resp.status_code != requests.codes.OK:
-                print u'二维码登陆校验失败: %u' % resp.status_code
+                logging.info(u'二维码登陆校验失败: %u' % resp.status_code)
                 return False
             
             ## login succeed
@@ -238,11 +239,11 @@ class JDWrapper(object):
             for k, v in resp.cookies.items():
                 self.cookies[k] = v
             
-            print u'登陆成功'
+            logging.info(u'登陆成功')
             return True
         
         except Exception as e:
-            print 'Exp:', e
+            logging.info('Exp:', e)
             raise
 
         return False
@@ -253,21 +254,21 @@ class JDWrapper(object):
             if verbose != 0:
                 soup = bs4.BeautifulSoup(resp.text, "html.parser")
                 tags = soup.select('div.content')
-                print u'{}'.format(tags[0].text)
+                logging.info(u'{}'.format(tags[0].text.strip('\n')))
             if resp.status_code != requests.codes.OK:
                 return 0
             return 1
         except Exception, e:
-            #print 'Exp {0} : {1}'.format(FuncName(), e)
+            if verbose != 0:
+                logging.info('Exp {0} : {1}'.format(FuncName(), e))
             return 0
 
 def click_thread(jd, url, target, id):    
     cnt = 0
-    print u'进程{}:开始运行'.format(id+1)
+    logging.info(u'进程{}:开始运行'.format(id+1))
     while(time.time() < target):
         cnt = cnt + jd.click(url, 0)
     jd.click(url, 1)
-    #print u'进程{}:运行{}分钟，点击{}次'.format(id+1, duration, cnt)
     return cnt
 
 def main(options):
@@ -285,22 +286,26 @@ def main(options):
         if (ttime != None):
             break;
     if ttime == None:
-        print u'获取时间失败'
+        logging.info(u'获取时间失败')
         return
     current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec
     delta = int(current - stime)
-    print u'系统时间差为{}秒'.format(delta)
+    logging.info(u'系统时间差为{}秒'.format(delta))
     if (target < current):
         target = current
     while 1:
-        jd.click(options.url, 0)
-        if (time.time() + delta + 60) >= target:
+        tick = time.time()
+        verbose = 0
+        if ((int(tick) % 10) == 0):
+            verbose = 1
+        jd.click(options.url, verbose)
+        if (tick + delta + 60) >= target:
             break;
         time.sleep(step)
     current = time.time() + delta
     m, s = divmod(current, 60)
     h, m = divmod(m, 60)
-    print u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), options.hour, options.minute, 0)
+    logging.info(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), options.hour, options.minute, 0))
     jd.click(options.url, 1)
     deadline = time.time() + (options.duration * 60)
     for i in range(options.process):
@@ -310,7 +315,7 @@ def main(options):
     cnt = 0
     for res in result:
         cnt += res.get()
-    print u'运行{}分钟，点击{}次'.format(options.duration, cnt)
+    logging.info(u'运行{}分钟，点击{}次'.format(options.duration, cnt))
 
 if __name__ == '__main__':
     # help message
@@ -325,8 +330,16 @@ if __name__ == '__main__':
                         type=int, help='Duration in minutes', default=24*60)
     parser.add_argument('-p', '--process', 
                         type=int, help='Number of processes', default=1)
-                        
+    parser.add_argument('-l', '--log', 
+                        help='Log file', default=None)
+
     options = parser.parse_args()
-    print options
+    if (options.log != None):
+        logging.basicConfig(level=logging.WARNING, format='%(asctime)s %(message)s', datefmt='%H:%M:%S', filename=options.log, filemode='w')
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s %(message)s', datefmt='%H:%M:%S')
+    console.setFormatter(formatter)
+    logging.getLogger('').addHandler(console)
     main(options)
-    
+

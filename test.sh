@@ -1,15 +1,14 @@
-URL="https://coupon.jd.com/ilink/couponSendFront/send_index.action?key=e6c7b0f611cb4af59c0cc028e80d90cc&roleId=6928644&to=sale.jd.com/act/wh6aulr4ep7wv5.html&"
-HOUR=14
+URL="https://coupon.jd.com/ilink/couponActiveFront/front_index.action?key=33fc30cd907841f6ac8aed441986f067&roleId=6939376&to=sale.jd.com/act/ecksrp1q2wbwth.html&"
+HOUR=20
 MINUTE=00
 DURATION=3
-PROCESS=8
+PROCESS=16
 FILE="log.txt"
 if [ -e $FILE ]; then
     rm $FILE
 fi
 echo "Login to JD ..."
-#python py/jd_coupon.py -u $URL -hh $HOUR -m $MINUTE -d $DURATION -p $PROCESS
-python py/jd_coupon.py -u $URL -hh $HOUR -m $MINUTE -d $DURATION -p $PROCESS | tee $FILE
+python py/jd_coupon.py -u $URL -hh $HOUR -m $MINUTE -d $DURATION -p $PROCESS -l $FILE
 USER="jd_coupon_log"
 PASS="jd123456"
 TO="jd_coupon_log@163.com"
