@@ -16,9 +16,12 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+# get function name
+FuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name
+
 class JDCoupon(JDWrapper):
     '''
-    This class used to click JD coupon
+    This class used to sign in JD coupon
     '''
     def click(self, url, level=None):
         try:
