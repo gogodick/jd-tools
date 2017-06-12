@@ -9,7 +9,7 @@ python -m pip install requests
 python -m pip install beautifulsoup4
 ```
 ## Usage
-### jd_coupon.sh
+### jd_coupon.py
 Please refer to coupon.sh.
 1. URL is your coupon url.
 2. HOUR is hour for coupon release time.
@@ -34,5 +34,5 @@ Login to JD ...
 11:36:11 - (WARNING) 登陆成功
 11:36:14 - (WARNING) 活动已结束或不存在，看下其他活动吧~
 ```
-### jd_crawler.sh
+### jd_crawler.py
 Please refer to crawler.sh.
