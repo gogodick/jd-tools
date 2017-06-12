@@ -9,7 +9,7 @@ python -m pip install requests
 python -m pip install beautifulsoup4
 ```
 ## Usage
-Please modify test.sh.
+Please modify coupon.sh.
 1. URL is your coupon url.
 2. HOUR is hour for coupon release time.
 3. MINUTE is minute for coupon release time.
@@ -22,14 +22,14 @@ Please modify test.sh.
 
 And the result is like this:
 ``` cmd
-$ source test.sh
+$ source coupon.sh
 Login to JD ...
-Namespace(duration=3, hour=14, minute=0, process=8, url='https://coupon.jd.com/ilink/couponSendFront/send_index.action?key=e6c7b0f611cb4af59c0cc028e80d90cc&roleId=6928644&to=sale.jd.com/act/wh6aulr4ep7wv5.html&')
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Sat Jun 10 12:17:44 2017 > 请打开京东手机客户端，准备扫码登陆:
-201 : 二维码未扫描 ，请扫描二维码
-201 : 二维码未扫描 ，请扫描二维码
-201 : 二维码未扫描 ，请扫描二维码
-200 : AAEAMD1ca-aAVdIEPZzLJ7PyOd96F1WZ1v46Gw06TRlcxIjc242nJadG-RNvqMAsF6obMQ
-登陆成功
+11:35:58 - (WARNING) +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+11:35:58 - (WARNING) Mon Jun 12 11:35:58 2017 > 请打开京东手机客户端，准备扫码登陆:
+11:36:01 - (WARNING) 201 : 二维码未扫描 ，请扫描二维码
+11:36:04 - (WARNING) 201 : 二维码未扫描 ，请扫描二维码
+11:36:07 - (WARNING) 201 : 二维码未扫描 ，请扫描二维码
+11:36:10 - (WARNING) 200 : AAEAMFe35heU8_RoHJ5VmRD-rKfPQOejQwLSb3DtInT457JInXYVvLWR5PeUx-xCb1BnwQ
+11:36:11 - (WARNING) 登陆成功
+11:36:14 - (WARNING) 活动已结束或不存在，看下其他活动吧~
 ```
