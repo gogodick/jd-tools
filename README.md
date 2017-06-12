@@ -1,6 +1,6 @@
 # jd-coupon
-This Script is used to click the coupon on JD website.
-And the original code is from https://github.com/Adyzng/jd-autobuy, his code is used to login to JD website.
+These scripts are used to search and click the coupon on JD website.
+And the original code is from https://github.com/Adyzng/jd-autobuy, and his code is used to login to JD website.
 
 ## Enviroment
 Please install Cygwin with python and pip, and use below commands to install modules:
@@ -9,7 +9,8 @@ python -m pip install requests
 python -m pip install beautifulsoup4
 ```
 ## Usage
-Please modify coupon.sh.
+### jd_coupon.sh
+Please refer to coupon.sh.
 1. URL is your coupon url.
 2. HOUR is hour for coupon release time.
 3. MINUTE is minute for coupon release time.
@@ -33,3 +34,5 @@ Login to JD ...
 11:36:11 - (WARNING) 登陆成功
 11:36:14 - (WARNING) 活动已结束或不存在，看下其他活动吧~
 ```
+### jd_crawler.sh
+Please refer to crawler.sh.
