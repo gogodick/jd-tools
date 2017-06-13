@@ -6,6 +6,7 @@ import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 import os
 import time
+import datetime
 import json
 import random
 import logging, logging.handlers
@@ -23,6 +24,30 @@ class JDCoupon(JDWrapper):
     '''
     This class used to click JD coupon
     '''
+    delta_time = None
+
+    def set_local_time(self):
+        for i in range(3):
+            ttime = self.get_network_time()
+            stime = time.time()
+            if (ttime != None):
+                break;
+        if ttime == None:
+            logging.error(u'获取网络时间失败！！！')
+            return
+        current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec
+        self.delta_time = current - stime
+        logging.warning(u'系统时间差为{}秒'.format(self.delta_time))
+
+    def get_local_time(self):
+        if self.delta_time != None:
+            current = time.time() + self.delta_time
+        else:
+            logging.error(u'本地时间没有校准！！！')
+            tt = datetime.datetime.now()
+            current = (tt.hour * 3600) + (tt.minute * 60) + tt.second
+        return int(current)
+
     def click(self, url, level=None):
         try:
             resp = self.sess.get(url)
@@ -40,26 +65,16 @@ class JDCoupon(JDWrapper):
 
     def click_wait(self, url, hour, minute, delay):
         target = (hour * 3600) + (minute * 60)
-        for i in range(3):
-            ttime = self.get_current_time()
-            stime = time.time()
-            if (ttime != None):
-                break;
-        if ttime == None:
-            logging.warning(u'获取时间失败')
-            return 0
-        current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec
-        delta = int(current - stime)
-        logging.warning(u'系统时间差为{}秒'.format(delta))
+        self.set_local_time()
+        current = self.get_local_time()
         if (target < current):
             target = current
         while 1:
-            tick = time.time()
             self.click(url, logging.INFO)
-            if (tick + delta + 60) >= target:
+            if (self.get_local_time() + 60) >= target:
                 break;
             time.sleep(delay)
-        current = time.time() + delta
+        current = self.get_local_time()
         m, s = divmod(current, 60)
         h, m = divmod(m, 60)
         logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), hour, minute, 0))
