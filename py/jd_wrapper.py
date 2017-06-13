@@ -202,7 +202,7 @@ class JDWrapper(object):
 
         return False
 
-    def get_current_time(self):
+    def get_network_time(self):
         try:
             response = requests.get('http://www.jd.com')
             date = response.headers['date']
