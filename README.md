@@ -8,6 +8,7 @@ Please install Cygwin with python and pip, and use below commands to install mod
 python -m pip install requests
 python -m pip install beautifulsoup4
 ```
+Ubuntu Desktop is also supported.
 ## Usage
 ### jd_coupon.py
 Please refer to coupon.sh.
