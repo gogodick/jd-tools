@@ -74,16 +74,12 @@ class JDCoupon(JDWrapper):
             if (self.get_local_time() + 60) >= target:
                 break;
             time.sleep(delay)
-        current = self.get_local_time()
-        m, s = divmod(current, 60)
-        h, m = divmod(m, 60)
-        logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), hour, minute, 0))
         return 1
 
-def click_thread(jd, url, target, id):    
+def click_task(jd, url, id):    
     cnt = 0
     logging.warning(u'进程{}:开始运行'.format(id+1))
-    while(time.time() < target):
+    while(run_flag.value != 0):
         cnt = cnt + jd.click(url, None)
     jd.click(url, logging.WARNING)
     return cnt
@@ -120,11 +116,22 @@ if __name__ == '__main__':
     if (0 == jd.click_wait(options.url, options.hour, options.minute, 1)):
         sys.exit(1)
     jd.click(options.url, logging.WARNING)
+    run_flag = multiprocessing.Value('i', 0)
     pool = multiprocessing.Pool(processes=options.process+1)
     result = []
-    deadline = time.time() + (options.duration * 60)
+    current = jd.get_local_time()
+    m, s = divmod(current, 60)
+    h, m = divmod(m, 60)
+    logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), options.hour, options.minute, 0))
+    run_flag.value = 1
     for i in range(options.process):
-        result.append(pool.apply_async(click_thread, args=(jd, options.url, deadline, i,)))
+        result.append(pool.apply_async(click_task, args=(jd, options.url, i,)))
+    time.sleep(options.duration * 60)
+    current = jd.get_local_time()
+    m, s = divmod(current, 60)
+    h, m = divmod(m, 60)
+    logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), options.hour, options.minute, 0))
+    run_flag.value = 0
     pool.close()
     pool.join()
     cnt = 0
