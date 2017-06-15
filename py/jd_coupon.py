@@ -53,8 +53,15 @@ class JDCoupon(JDWrapper):
             resp = self.sess.get(url)
             if level != None:
                 soup = bs4.BeautifulSoup(resp.text, "html.parser")
-                tags = soup.select('div.content')
-                logging.log(level, u'{}'.format(tags[0].text.strip(' \t\r\n')))
+                tag1 = soup.select('title')
+                tag2 = soup.select('div.content')
+                if len(tag2):
+                    logging.log(level, u'{}'.format(tag2[0].text.strip(' \t\r\n')))
+                else:
+                    if len(tag1):
+                        logging.log(level, u'{}'.format(tag1[0].text.strip(' \t\r\n')))
+                    else:
+                        logging.log(level, u'页面错误')
             if resp.status_code != requests.codes.OK:
                 return 0
             return 1
