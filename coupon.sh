@@ -1,8 +1,8 @@
-URL="http://coupon.jd.com/ilink/couponSendFront/send_index.action?key=8ac0db8bf5224b3caad26e7241aa4ade&roleId=6966565&to=sale.jd.com/act/wh6aulr4ep7wv5.html&"
-HOUR=10
+URL="https://coupon.jd.com/ilink/couponSendFront/send_index.action?key=5295463f6ce84ae8afce9624093e2fab&roleId=6932641&to=sale.jd.com/act/bgx0ywve5awmvnxp.html&"
+HOUR=21
 MINUTE=00
 DURATION=3
-PROCESS=16
+PROCESS=32
 FILE="coupon.txt"
 if [ -e $FILE ]; then
     rm $FILE

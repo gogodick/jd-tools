@@ -46,7 +46,7 @@ class JDCoupon(JDWrapper):
             logging.error(u'本地时间没有校准！！！')
             tt = datetime.datetime.now()
             current = (tt.hour * 3600) + (tt.minute * 60) + tt.second
-        return int(current)
+        return current
 
     def click(self, url, level=None):
         try:
@@ -70,22 +70,32 @@ class JDCoupon(JDWrapper):
                 logging.log(level, 'Exp {0} : {1}'.format(FuncName(), e))
             return 0
 
-    def click_wait(self, url, hour, minute, delay):
-        target = (hour * 3600) + (minute * 60)
-        self.set_local_time()
+    def compare_local_time(self, target):
+        one_day = 86400; # 24 * 60 *60
         current = self.get_local_time()
-        if (target < current):
-            target = current
+        if target < current:
+            target += one_day
+        return target - current;
+    
+    def click_wait(self, url, target, delay):
+        self.set_local_time()
         while 1:
             self.click(url, logging.INFO)
-            if (self.get_local_time() + 60) >= target:
+            diff = self.compare_local_time(target)
+            if (diff <= 60) and (diff >= -60):
                 break;
             time.sleep(delay)
         return 1
 
-def click_task(jd, url, id):    
+def click_task(jd, url, target, id):    
     cnt = 0
     logging.warning(u'进程{}:开始运行'.format(id+1))
+    while(1):
+        if (run_flag.value == 0):
+            return 0
+        diff = jd.compare_local_time(target)
+        if (diff <= 2):
+            break;
     while(run_flag.value != 0):
         cnt = cnt + jd.click(url, None)
     jd.click(url, logging.WARNING)
@@ -120,22 +130,23 @@ if __name__ == '__main__':
     if not jd.login_by_QR():
         sys.exit(1)
     jd.click(options.url, logging.WARNING)
-    if (0 == jd.click_wait(options.url, options.hour, options.minute, 1)):
+    target = (options.hour * 3600) + (options.minute * 60)
+    if (0 == jd.click_wait(options.url, target, 1)):
         sys.exit(1)
     jd.click(options.url, logging.WARNING)
     run_flag = multiprocessing.Value('i', 0)
     pool = multiprocessing.Pool(processes=options.process+1)
     result = []
     current = jd.get_local_time()
-    m, s = divmod(current, 60)
+    m, s = divmod(int(current), 60)
     h, m = divmod(m, 60)
     logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), options.hour, options.minute, 0))
     run_flag.value = 1
     for i in range(options.process):
-        result.append(pool.apply_async(click_task, args=(jd, options.url, i,)))
+        result.append(pool.apply_async(click_task, args=(jd, options.url, target, i,)))
     time.sleep(options.duration * 60)
     current = jd.get_local_time()
-    m, s = divmod(current, 60)
+    m, s = divmod(int(current), 60)
     h, m = divmod(m, 60)
     logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), options.hour, options.minute, 0))
     run_flag.value = 0
