@@ -27,14 +27,23 @@ class JDCoupon(JDWrapper):
     delta_time = None
 
     def set_local_time(self):
+        logging.warning(u'开始校准系统时间')
         for i in range(3):
             ttime = self.get_network_time()
-            stime = time.time()
             if (ttime != None):
                 break;
-        if ttime == None:
-            logging.error(u'获取网络时间失败！！！')
+        if (ttime == None):
+            logging.warning(u'无法获取网络时间！！！')
             return
+        tmp_sec = ttime.tm_sec
+        while (1):
+            ttime = self.get_network_time()
+            stime = time.time()
+            if (ttime == None):
+                continue;
+            if (ttime.tm_sec != tmp_sec):
+                break;
+            tmp_sec = ttime.tm_sec
         current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec
         self.delta_time = current - stime
         logging.warning(u'系统时间差为{}秒'.format(self.delta_time))
@@ -52,11 +61,6 @@ class JDCoupon(JDWrapper):
         try:
             resp = self.sess.get(url)
             if level != None:
-                stime = time.time()
-                date = resp.headers['date']
-                ltime=time.strptime(date[5:25], "%d %b %Y %H:%M:%S")
-                ttime=time.localtime(time.mktime(ltime)+ 8* 60* 60)
-                self.delta_time = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec - stime
                 soup = bs4.BeautifulSoup(resp.text, "html.parser")
                 tag1 = soup.select('title')
                 tag2 = soup.select('div.content')
