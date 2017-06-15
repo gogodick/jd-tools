@@ -71,17 +71,26 @@ def search_task(jd, page_list, id):
     logging.critical(u'进程{}:完成任务'.format(id+1))
     return len(local_page_list), coupon_cnt
 
-def main_task(jd, url):
+def split_list(l, n):
+    length = len(l)
+    if n > length:
+        n = length
+    sz = length // n
+    c = length % n
+    return map(lambda i: l[i*(sz+1):(i+1)*(sz+1)] if i < c else l[i*sz+c:i*sz+c+sz], range(n))
+    
+def main_task(jd, url, num):
     page_cnt = 0
     coupon_cnt = 0    
     pages, coupons = jd.search_page(url)
     jd.click_list(coupons)
     page_cnt += len(pages)
     coupon_cnt += len(coupons)
-    pool = multiprocessing.Pool(processes=len(pages)+1)
+    page_ll = split_list(pages, num)
+    pool = multiprocessing.Pool(processes=len(page_ll)+1)
     result = []
-    for i in range(len(pages)):
-        result.append(pool.apply_async(search_task, args=(jd, [pages[i]], i,)))
+    for i in range(len(page_ll)):
+        result.append(pool.apply_async(search_task, args=(jd, page_ll[i], i,)))
     pool.close()
     pool.join()
     for res in result:
@@ -120,6 +129,8 @@ if __name__ == '__main__':
                         help='Entry URL', required=True)
     parser.add_argument('-hh', '--hour', 
                         type=int, help='Target hour, 0...23', default=None)
+    parser.add_argument('-p', '--process', 
+                        type=int, help='Number of processes', default=1)
     parser.add_argument('-l', '--log', 
                         help='Log file', default=None)
     options = parser.parse_args()
@@ -136,10 +147,10 @@ if __name__ == '__main__':
         sys.exit(1)
 
     if options.hour == None:
-        main_task(jd, options.url)
+        main_task(jd, options.url, options.process)
     else:
         target = options.hour - 1
         if target < 0:
             target += 24
         wait_task(jd, options.url, target, 1)
-        main_task(jd, options.url)
+        main_task(jd, options.url, options.process)
