@@ -52,6 +52,11 @@ class JDCoupon(JDWrapper):
         try:
             resp = self.sess.get(url)
             if level != None:
+                stime = time.time()
+                date = resp.headers['date']
+                ltime=time.strptime(date[5:25], "%d %b %Y %H:%M:%S")
+                ttime=time.localtime(time.mktime(ltime)+ 8* 60* 60)
+                self.delta_time = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec - stime
                 soup = bs4.BeautifulSoup(resp.text, "html.parser")
                 tag1 = soup.select('title')
                 tag2 = soup.select('div.content')
@@ -94,7 +99,7 @@ def click_task(jd, url, target, id):
         if (run_flag.value == 0):
             return 0
         diff = jd.compare_local_time(target)
-        if (diff <= 2):
+        if (diff <= 1):
             break;
     while(run_flag.value != 0):
         cnt = cnt + jd.click(url, None)
