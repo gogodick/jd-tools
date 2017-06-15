@@ -16,6 +16,7 @@ import time
 import json
 import random
 import logging, logging.handlers
+import platform
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -131,7 +132,10 @@ class JDWrapper(object):
                     f.write(chunk)
             
             ## scan QR code with phone
-            os.system('explorer ' + image_file)
+            if 'Linux' in platform.system():
+                os.system('eog ' + image_file)
+            else:
+                os.system('explorer ' + image_file)
 
             # step 3： check scan result
             ## mush have
