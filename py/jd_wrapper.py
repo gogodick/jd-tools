@@ -133,7 +133,7 @@ class JDWrapper(object):
             
             ## scan QR code with phone
             if 'Linux' in platform.system():
-                os.system('eog ' + image_file)
+                os.system('eog ' + image_file + '&')
             else:
                 os.system('explorer ' + image_file)
 
