@@ -87,7 +87,7 @@ class JDCoupon(JDWrapper):
         while 1:
             self.click(url, logging.INFO)
             diff = self.compare_local_time(target)
-            if (diff <= 60) and (diff >= -60):
+            if (diff <= 50) and (diff >= -50):
                 break;
             time.sleep(delay)
         return 1
@@ -135,7 +135,7 @@ if __name__ == '__main__':
         sys.exit(1)
     jd.click(options.url, logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)
-    if (0 == jd.click_wait(options.url, target, 1)):
+    if (0 == jd.click_wait(options.url, target, 2)):
         sys.exit(1)
     jd.click(options.url, logging.WARNING)
     run_flag = multiprocessing.Value('i', 0)
