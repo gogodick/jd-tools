@@ -102,11 +102,9 @@ def main_task(jd, url, num):
 
 def wait_task(jd, url, target, delay):
     jd.set_local_time()
-    prev = jd.get_local_time()
-    ph = prev / 3600
+    ph, pm, ps = jd.format_local_time()
     while (1):
-        curr = jd.get_local_time()
-        ch = curr / 3600
+        ch, cm, cs = jd.format_local_time()
         if ch != ph:
             if ph == target:
                 break;
@@ -117,10 +115,8 @@ def wait_task(jd, url, target, delay):
         except Exception, e:
             pass
         time.sleep(delay)
-    current = jd.get_local_time()
-    m, s = divmod(current, 60)
-    h, m = divmod(m, 60)
-    logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, target+1, 0, 0))
+    ch, cm, cs = jd.format_local_time()
+    logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(ch, cm, cs, target+1, 0, 0))
             
 if __name__ == '__main__':
     # help message
