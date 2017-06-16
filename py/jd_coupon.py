@@ -9,6 +9,7 @@ import time
 import datetime
 import json
 import random
+import math
 import logging, logging.handlers
 import argparse
 import multiprocessing
@@ -30,31 +31,25 @@ class JDCoupon(JDWrapper):
         logging.warning(u'开始校准系统时间')
         for i in range(3):
             ttime = self.get_network_time()
+            stime = time.time()
             if (ttime != None):
                 break;
         if (ttime == None):
             logging.warning(u'无法获取网络时间！！！')
             return
-        tmp_sec = ttime.tm_sec
-        while (1):
-            ttime = self.get_network_time()
-            stime = time.time()
-            if (ttime == None):
-                continue;
-            if (ttime.tm_sec != tmp_sec):
-                break;
-        current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec
-        self.delta_time = current - stime
+        self.delta_time = ttime - stime
         logging.warning(u'系统时间差为{}秒'.format(self.delta_time))
 
     def get_local_time(self):
         if self.delta_time != None:
-            current = time.time() + self.delta_time
+            return time.time() + self.delta_time
         else:
             logging.error(u'本地时间没有校准！！！')
-            tt = datetime.datetime.now()
-            current = (tt.hour * 3600) + (tt.minute * 60) + tt.second
-        return current
+            return time.time()
+    
+    def format_local_time(self):
+        ttime = time.localtime(self.get_local_time())
+        return ttime.tm_hour, ttime.tm_min, ttime.tm_sec
 
     def click(self, url, level=None):
         try:
@@ -78,8 +73,11 @@ class JDCoupon(JDWrapper):
             return 1
 
     def compare_local_time(self, target):
-        one_day = 86400; # 24 * 60 *60
-        current = self.get_local_time()
+        one_day = 86400.0; # 24 * 60 *60
+        local_time = self.get_local_time()
+        fraction = local_time - math.floor(local_time)
+        ttime = time.localtime(local_time)
+        current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec + fraction
         if target < current:
             target += one_day
         return target - current;
@@ -101,7 +99,7 @@ def click_task(jd, url, target, id):
         if (run_flag.value == 0):
             return 0
         diff = jd.compare_local_time(target)
-        if (diff <= 1):
+        if (diff <= 0.5):
             break;
     while(run_flag.value != 0):
         cnt = cnt + jd.click(url, None)
@@ -132,7 +130,6 @@ if __name__ == '__main__':
         log_fmt = logging.Formatter("%(asctime)s - %(message)s", '%H:%M:%S')  
         log_hdl.setFormatter(log_fmt)  
         logging.getLogger('').addHandler(log_hdl)
-
     jd = JDCoupon()
     if not jd.login_by_QR():
         sys.exit(1)
@@ -144,18 +141,14 @@ if __name__ == '__main__':
     run_flag = multiprocessing.Value('i', 0)
     pool = multiprocessing.Pool(processes=options.process+1)
     result = []
-    current = jd.get_local_time()
-    m, s = divmod(int(current), 60)
-    h, m = divmod(m, 60)
-    logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), options.hour, options.minute, 0))
+    h, m, s = jd.format_local_time()
+    logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
     run_flag.value = 1
     for i in range(options.process):
         result.append(pool.apply_async(click_task, args=(jd, options.url, target, i,)))
     time.sleep(options.duration * 60)
-    current = jd.get_local_time()
-    m, s = divmod(int(current), 60)
-    h, m = divmod(m, 60)
-    logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(int(h), int(m), int(s), options.hour, options.minute, 0))
+    h, m, s = jd.format_local_time()
+    logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
     run_flag.value = 0
     pool.close()
     pool.join()
