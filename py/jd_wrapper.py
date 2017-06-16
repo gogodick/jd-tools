@@ -215,4 +215,5 @@ class JDWrapper(object):
             logging.warning('Exp {0} : {1}'.format(FuncName(), e))
             return None
         else:
-            return response.tx_time + response.delay
+            #return response.tx_time + response.delay
+            return response.tx_time
