@@ -43,7 +43,6 @@ class JDCoupon(JDWrapper):
                 continue;
             if (ttime.tm_sec != tmp_sec):
                 break;
-            tmp_sec = ttime.tm_sec
         current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec
         self.delta_time = current - stime
         logging.warning(u'系统时间差为{}秒'.format(self.delta_time))
@@ -71,13 +70,12 @@ class JDCoupon(JDWrapper):
                         logging.log(level, u'{}'.format(tag1[0].text.strip(' \t\r\n')))
                     else:
                         logging.log(level, u'页面错误')
-            if resp.status_code != requests.codes.OK:
-                return 0
-            return 1
         except Exception, e:
             if level != None:
                 logging.log(level, 'Exp {0} : {1}'.format(FuncName(), e))
             return 0
+        else:
+            return 1
 
     def compare_local_time(self, target):
         one_day = 86400; # 24 * 60 *60
