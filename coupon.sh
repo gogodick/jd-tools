@@ -1,8 +1,8 @@
 #URL="https://coupon.jd.com/ilink/couponSendFront/send_index.action?key=5295463f6ce84ae8afce9624093e2fab&roleId=6932641&to=sale.jd.com/act/bgx0ywve5awmvnxp.html&"
 URL="http://coupon.jd.com/ilink/couponSendFront/send_index.action?key=cf5ca79d97fa451b9554df5229d711e4&roleId=6965414&to=sale.jd.com/act/qts6qbhnoml0kj1b.html&"
-HOUR=14
+HOUR=20
 MINUTE=00
-DURATION=2
+DURATION=1
 PROCESS=32
 FILE="coupon.txt"
 if [ -e $FILE ]; then

@@ -99,7 +99,7 @@ def click_task(jd, url, target, id):
         if (run_flag.value == 0):
             return 0
         diff = jd.compare_local_time(target)
-        if (diff <= 5):
+        if (diff <= 10):
             break;
     while(run_flag.value != 0):
         cnt = cnt + jd.click(url, None)
