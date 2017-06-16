@@ -11,6 +11,7 @@ import bs4
 import requests
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
+import ntplib
 import os
 import time
 import json
@@ -208,11 +209,10 @@ class JDWrapper(object):
 
     def get_network_time(self):
         try:
-            response = requests.get('http://www.jd.com')
-            date = response.headers['date']
-            ltime=time.strptime(date[5:25], "%d %b %Y %H:%M:%S")
-            ttime=time.localtime(time.mktime(ltime)+ 8* 60* 60) 
-            return ttime
+            client = ntplib.NTPClient()
+            response = client.request('ntp2.aliyun.com')
         except Exception, e:
             logging.warning('Exp {0} : {1}'.format(FuncName(), e))
             return None
+        else:
+            return response.tx_time + response.delay
