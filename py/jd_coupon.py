@@ -80,7 +80,7 @@ class JDCoupon(JDWrapper):
         current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec + fraction
         if target < current:
             target += one_day
-        return target - current;
+        return target - current
     
     def click_wait(self, url, target, delay):
         self.set_local_time()
