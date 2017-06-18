@@ -53,7 +53,7 @@ class JDCoupon(JDWrapper):
 
     def click(self, url, level=None):
         try:
-            resp = self.sess.get(url)
+            resp = self.sess.get(url, timeout=5)
             if level != None:
                 soup = bs4.BeautifulSoup(resp.text, "html.parser")
                 tag1 = soup.select('title')
