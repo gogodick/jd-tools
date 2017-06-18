@@ -135,7 +135,7 @@ if __name__ == '__main__':
         sys.exit(1)
     jd.click(options.url, logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)
-    if (0 == jd.click_wait(options.url, target, 2)):
+    if (0 == jd.click_wait(options.url, target, 5)):
         sys.exit(1)
     jd.click(options.url, logging.WARNING)
     run_flag = multiprocessing.Value('i', 0)
