@@ -1,5 +1,5 @@
 # jd-coupon
-These scripts are used to search and click the coupon on JD website.
+These scripts are used to search coupon and lottery on JD website.
 And the original code is from https://github.com/Adyzng/jd-autobuy, and his code is used to login to JD website.
 
 ## Enviroment
@@ -38,3 +38,6 @@ Login to JD ...
 ```
 ### jd_crawler.py
 Please refer to crawler.sh.
+
+### jd_lottery.py
+Please refer to lottery.sh.
