@@ -97,7 +97,7 @@ class JDLottery(JDWrapper):
         self.set_local_time()
         while 1:
             diff = self.compare_local_time(target)
-            if (diff <= 0.05):
+            if (diff <= 0.1):
                 break;
         return
 
@@ -132,9 +132,7 @@ if __name__ == '__main__':
         target = (options.hour * 3600) + (options.minute * 60)
         jd.relax_wait(options.code, target, 5)
         jd.busy_wait(target)
-        #print jd.get_local_time()
         for i in range(3):
             jd.click_lottery("af555c28-4eaf-4ab4-9f9d-9feb818ce6e5", logging.WARNING)
-        #print jd.get_local_time()
     else:
         logging.error(u'命令参数错误！！！')
