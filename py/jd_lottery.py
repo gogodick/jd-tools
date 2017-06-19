@@ -59,8 +59,7 @@ class JDLottery(JDWrapper):
         try:
             resp = self.sess.get(lottery_url,headers=headers,timeout=5)
             if level != None:
-                prompt = re.findall(u'"promptMsg":"(.*?)"', resp.text, re.S)
-                logging.log(level, u'{}'.format(prompt[0]))
+                logging.log(level, u'{}'.format(resp.text))
         except Exception, e:
             if level != None:
                 logging.log(level, 'Exp {0} : {1}'.format(FuncName(), e))
@@ -74,8 +73,7 @@ class JDLottery(JDWrapper):
         try:
             resp = self.sess.get(lottery_url,headers=headers,timeout=5)
             if level != None:
-                prompt = re.findall(u'"promptMsg":"(.*?)"', resp.text, re.S)
-                logging.log(level, u'{}'.format(prompt[0]))
+                logging.log(level, u'{}'.format(resp.text))
         except Exception, e:
             if level != None:
                 logging.log(level, 'Exp {0} : {1}'.format(FuncName(), e))
@@ -133,6 +131,7 @@ if __name__ == '__main__':
         jd.relax_wait(options.code, target, 5)
         jd.busy_wait(target)
         for i in range(3):
-            jd.click_lottery(options.code, logging.WARNING)
+            jd.click_lottery(options.code, None)
+        logging.info(jd.get_local_time())
     else:
         logging.error(u'命令参数错误！！！')

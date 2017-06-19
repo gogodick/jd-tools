@@ -1,6 +1,6 @@
 URL="https://sale.jd.com/act/XUh2CDEPdI6YuzZf.html"
-CODE="af555c28-4eaf-4ab4-9f9d-9feb818ce6e5"
-HOUR=00
+CODE="7cda74ee-f9f3-4caf-bcc3-8d0bdd509a2d"
+HOUR=08
 MINUTE=00
 LOG_FILE="log_lottery.txt"
 LOTTERY_FILE="my_lottery.csv"
