@@ -1,4 +1,4 @@
-# jd-coupon
+# jd-tools
 These scripts are used to search coupon and lottery on JD website.
 And the original code is from https://github.com/Adyzng/jd-autobuy, and his code is used to login to JD website.
 
