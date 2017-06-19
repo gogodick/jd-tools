@@ -12,7 +12,6 @@ import logging, logging.handlers
 import argparse
 import re
 import multiprocessing
-from jd_coupon import JDCoupon
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -20,113 +19,167 @@ sys.setdefaultencoding('utf-8')
 # get function name
 FuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name
 
-class JDCrawler(JDCoupon):
+def task_wrapper(jd, pages, id):
+    visited_pages = []
+    start = time.time()
+    pp, cc, ll = jd.search_pages(visited_pages, pages, 0, id)
+    stop = time.time()
+    duration = int((stop - start) / 60)
+    logging.warning(u'任务{}:结束运行，运行时间为{}分钟'.format(id, duration))
+    return pp, cc, ll
+
+class Progress:
+    def __init__(self, total = 0):
+        self.count = 1
+        self.total = total
+    def move(self, s):
+        logging.info(s + str(int(self.count * 100/self.total)) + '%')
+        self.count += 1
+
+class JDCrawler(object):
     '''
-    This class used to search JD coupon
+    This class used to search JD coupon and lottery
     '''
-    def search_page(self, url):
+    sale_patterns = ["(sale.jd.com/act/\S+.html)"]
+    coupon_patterns = ["(coupon.jd.com/ilink/\S+.html)"]
+    lottery_patterns =  ["lotterycode:'(.*?)'", 'lotterycode=(.*?)"', 'data-code="(.*?)', 'lottNum="(.*?)"']
+    visited_pages = []
+    lottery_dict = {}
+    coupon_dict = {}
+    crawler_time_out = 5
+    depth_limit = 1
+    
+    def read_page(self, url):
         try:
-            resp = self.sess.get(url)
+            resp = self.sess.get(url, timeout = self.crawler_time_out)
             if resp.status_code != requests.codes.OK:
-                return [], []
+                return None
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return [], []
-        resp.encoding='utf-8'
-        soup = bs4.BeautifulSoup(resp.text, "html.parser")
-        tags = soup.select('title')
-        tt = tags[0].text.strip(' \t\r\n')
-        logging.info(u'{}'.format(tt))
-        logging.info(u'{}'.format(url)) 
-
-        page_list =re.findall(r"(https://sale.jd.com/act/\w+.html)" ,resp.text)
-        page_list = list(set(page_list))
-        coupon_list = re.findall(r"(https://coupon.jd.com/\S+.html)" ,resp.text)
-        coupon_list = list(set(coupon_list))
-        return page_list, coupon_list
-
-    def click_list(self, coupon_list):
-        for coupon_link in coupon_list:
-            coupon_link = coupon_link.replace('&amp;','&') 
-            self.click(coupon_link, logging.WARNING)
-            logging.warning(coupon_link)    
-
-def search_task(jd, page_list, id):
-    logging.critical(u'进程{}:开始运行'.format(id+1))
-    page_cnt = 0
-    coupon_cnt = 0
-    local_page_list = []
-    for page_url in page_list:
-        pages, coupons = jd.search_page(page_url)
-        jd.click_list(coupons)
-        coupon_cnt += len(coupons)
-        local_page_list += pages
-    local_page_list = list(set(local_page_list))
-    for page_url in local_page_list:
-        if page_url in page_list:
-            continue
-        pages, coupons = jd.search_page(page_url)
-        jd.click_list(coupons)
-        coupon_cnt += len(coupons)
-    logging.critical(u'进程{}:完成任务'.format(id+1))
-    return len(local_page_list), coupon_cnt
-
-def split_list(l, n):
-    length = len(l)
-    if n > length:
-        n = length
-    sz = length // n
-    c = length % n
-    return map(lambda i: l[i*(sz+1):(i+1)*(sz+1)] if i < c else l[i*sz+c:i*sz+c+sz], range(n))
+            return None 
+        else:
+            return resp.text
     
-def main_task(jd, url, num):
-    page_cnt = 0
-    coupon_cnt = 0    
-    pages, coupons = jd.search_page(url)
-    jd.click_list(coupons)
-    page_cnt += len(pages)
-    coupon_cnt += len(coupons)
-    page_ll = split_list(pages, num)
-    pool = multiprocessing.Pool(processes=len(page_ll)+1)
-    result = []
-    for i in range(len(page_ll)):
-        result.append(pool.apply_async(search_task, args=(jd, page_ll[i], i,)))
-    pool.close()
-    pool.join()
-    for res in result:
-        pp, cc = res.get()
-        page_cnt += pp
-        coupon_cnt += cc
-    logging.info(u'找到{}个网页'.format(page_cnt))
-    logging.info(u'找到{}个优惠券'.format(coupon_cnt))
+    def search_pages(self, visited_pages, pages, depth, id):
+        if depth > self.depth_limit:
+            return [], {}, {}
+        local_pages = []
+        local_pages += visited_pages
+        local_coupon_dict = {}
+        local_lottery_dict = {}
+        progress = Progress(len(pages))
+        for page in pages:
+            if depth <= 1:
+                progress.move(u'任务{}-深度{}:进度为'.format(id, depth))
+            if page in local_pages:
+                continue
+            new_pages = []
+            new_coupons = []
+            new_lotterys = []
+            page_text = self.read_page("https://"+page)
+            if page_text == None:
+                continue
+            for pattern in self.sale_patterns:
+                new_pages += re.findall(pattern, page_text)
+            for pattern in self.coupon_patterns:
+                new_coupons += re.findall(pattern, page_text)
+            for pattern in self.lottery_patterns:
+                new_lotterys += re.findall(pattern, page_text)
+            new_coupons = list(set(new_coupons))
+            for coupon in new_coupons:
+                if coupon not in local_coupon_dict:
+                    local_coupon_dict[coupon] = page
+            new_lotterys = list(set(new_lotterys))
+            for lottery in new_lotterys:
+                if lottery not in local_lottery_dict:
+                    local_lottery_dict[lottery] = page    
+            new_pages = list(set(new_pages))
+            local_pages.append(page)
+            pp, cc, ll = self.search_pages(local_pages, new_pages, depth+1, id)
+            for p in pp:
+                if p not in local_pages:
+                    local_pages.append(p)
+            for c in cc:
+                if c not in local_coupon_dict:
+                    local_coupon_dict[c] = cc[c]
+            for l in ll:
+                if l not in local_lottery_dict:
+                    local_lottery_dict[l] = ll[l]
+        logging.info(u'任务{}:当前搜索了{}个页面，找到了{}个优惠券，找到了{}个抽奖'.format(id, len(local_pages), len(local_coupon_dict), len(local_lottery_dict)))
+        return local_pages, local_coupon_dict, local_lottery_dict
 
-def wait_task(jd, url, target, delay):
-    jd.set_local_time()
-    ph, pm, ps = jd.format_local_time()
-    while (1):
-        ch, cm, cs = jd.format_local_time()
-        if ch != ph:
-            if ph == target:
-                break;
-            ph = ch
-            jd.set_local_time()
+    def split_list(self, l, n):
+        length = len(l)
+        if n > length:
+            n = length
+        sz = length // n
+        c = length % n
+        return map(lambda i: l[i*(sz+1):(i+1)*(sz+1)] if i < c else l[i*sz+c:i*sz+c+sz], range(n))
+
+    def start(self, num):
+        self.sess = requests.Session()
+        current_url = "https://www.jd.com"
+        new_pages = []
+        page_text = self.read_page(current_url)
+        if page_text == None:
+            return
+        for pattern in self.sale_patterns:
+            new_pages += re.findall(pattern, page_text)
+        new_pages = list(set(new_pages))
+        page_ll = self.split_list(new_pages, num)
+        pool = multiprocessing.Pool(processes=len(page_ll)+1)
+        result = []
+        for i in range(len(page_ll)):
+            result.append(pool.apply_async(task_wrapper, args=(self, page_ll[i], i,)))
+        pool.close()
+        pool.join()
+        for res in result:
+            pp, cc, ll = res.get()
+            for p in pp:
+                if p not in self.visited_pages:
+                    self.visited_pages.append(p)
+            for c in cc:
+                if c not in self.coupon_dict:
+                    self.coupon_dict[c] = cc[c]
+            for l in ll:
+                if l not in self.lottery_dict:
+                    self.lottery_dict[l] = ll[l]
+        logging.warning(u'总共搜索了{}个页面，找到了{}个优惠券，找到了{}个抽奖'.format(len(self.visited_pages), len(self.coupon_dict), len(self.lottery_dict)))
+
+    def save_coupon(self, file_name):
         try:
-            resp = jd.sess.get(url)
-        except Exception, e:
-            pass
-        time.sleep(delay)
-    ch, cm, cs = jd.format_local_time()
-    logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(ch, cm, cs, target+1, 0, 0))
-            
+            f = open(file_name, 'w')
+            for k in self.coupon_dict:
+                v = self.coupon_dict[k]
+                k = k.replace('&amp;','&')
+                str = '{},{}\n'.format(k, v)
+                f.write(str)
+            f.close()
+        except Exception as Err:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+
+    def save_lottery(self, file_name):
+        try:
+            f = open(file_name, 'w')
+            for k in self.lottery_dict:
+                v = self.lottery_dict[k]
+                str = '{},{}\n'.format(k, v)
+                f.write(str)
+            f.close()
+        except Exception as Err:
+            logging.error('Exp {0} : {1}'.format(FuncName(), Err))
+    
 if __name__ == '__main__':
     # help message
     parser = argparse.ArgumentParser(description='Simulate to login Jing Dong, and click coupon')
-    parser.add_argument('-u', '--url', 
-                        help='Entry URL', required=True)
-    parser.add_argument('-hh', '--hour', 
-                        type=int, help='Target hour, 0...23', default=None)
+    parser.add_argument('-d', '--depth', 
+                        type=int, help='depth limit', default=1)
     parser.add_argument('-p', '--process', 
                         type=int, help='Number of processes', default=1)
+    parser.add_argument('-cf', '--coupon_file', 
+                        help='Coupon file', default=None)
+    parser.add_argument('-lf', '--lottery_file', 
+                        help='Lottery file', default=None)
     parser.add_argument('-l', '--log', 
                         help='Log file', default=None)
     options = parser.parse_args()
@@ -139,14 +192,9 @@ if __name__ == '__main__':
         logging.getLogger('').addHandler(log_hdl)
 
     jd = JDCrawler()
-    if not jd.login_by_QR():
-        sys.exit(1)
-
-    if options.hour == None:
-        main_task(jd, options.url, options.process)
-    else:
-        target = options.hour - 1
-        if target < 0:
-            target += 24
-        wait_task(jd, options.url, target, 1)
-        main_task(jd, options.url, options.process)
+    jd.depth_limit = options.depth
+    jd.start(options.process)
+    if options.coupon_file != None:
+        jd.save_coupon(options.coupon_file);
+    if options.lottery_file != None:
+        jd.save_lottery(options.lottery_file);
