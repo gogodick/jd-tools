@@ -25,32 +25,6 @@ class JDCoupon(JDWrapper):
     '''
     This class used to click JD coupon
     '''
-    delta_time = None
-
-    def set_local_time(self):
-        logging.warning(u'开始校准系统时间')
-        for i in range(3):
-            ttime = self.get_network_time()
-            stime = time.time()
-            if (ttime != None):
-                break;
-        if (ttime == None):
-            logging.warning(u'无法获取网络时间！！！')
-            return
-        self.delta_time = ttime - stime
-        logging.warning(u'系统时间差为{}秒'.format(self.delta_time))
-
-    def get_local_time(self):
-        if self.delta_time != None:
-            return time.time() + self.delta_time
-        else:
-            logging.error(u'本地时间没有校准！！！')
-            return time.time()
-    
-    def format_local_time(self):
-        ttime = time.localtime(self.get_local_time())
-        return ttime.tm_hour, ttime.tm_min, ttime.tm_sec
-
     def click(self, url, level=None):
         try:
             resp = self.sess.get(url, timeout=5)
@@ -72,16 +46,6 @@ class JDCoupon(JDWrapper):
         else:
             return 1
 
-    def compare_local_time(self, target):
-        one_day = 86400.0; # 24 * 60 *60
-        local_time = self.get_local_time()
-        fraction = local_time - math.floor(local_time)
-        ttime = time.localtime(local_time)
-        current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec + fraction
-        if target < current:
-            target += one_day
-        return target - current
-    
     def click_wait(self, url, target, delay):
         self.set_local_time()
         while 1:
