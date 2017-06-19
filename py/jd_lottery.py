@@ -52,12 +52,66 @@ class JDLottery(JDWrapper):
             windate = re.findall('"winDate":"(.*?)"', each, re.S)[0]
             prize_list.append([windate, prizename])
         return prize_list
+    
+    def click_lottery(self, code, level=None):
+        headers = {'Referer': 'http://l.activity.jd.com/lottery/lottery_chance.action?lotteryCode='+code}
+        lottery_url = 'http://l.activity.jd.com/lottery/lottery_start.action?lotteryCode='+code
+        try:
+            resp = self.sess.get(lottery_url,headers=headers,timeout=5)
+            if level != None:
+                prompt = re.findall(u'"promptMsg":"(.*?)"', resp.text, re.S)
+                logging.log(level, u'{}'.format(prompt[0]))
+        except Exception, e:
+            if level != None:
+                logging.log(level, 'Exp {0} : {1}'.format(FuncName(), e))
+            return 0
+        else:
+            return 1
+
+    def touch_lottery(self, code, level=None):
+        headers = {'Referer': 'http://l.activity.jd.com/lottery/lottery_chance.action?lotteryCode='+code}
+        lottery_url = 'http://l.activity.jd.com/lottery/lottery_chance.action?lotteryCode='+code
+        try:
+            resp = self.sess.get(lottery_url,headers=headers,timeout=5)
+            if level != None:
+                prompt = re.findall(u'"promptMsg":"(.*?)"', resp.text, re.S)
+                logging.log(level, u'{}'.format(prompt[0]))
+        except Exception, e:
+            if level != None:
+                logging.log(level, 'Exp {0} : {1}'.format(FuncName(), e))
+            return 0
+        else:
+            return 1
+    
+    def relax_wait(self, code, target, delay):
+        self.set_local_time()
+        while 1:
+            self.touch_lottery(code, logging.INFO)
+            diff = self.compare_local_time(target)
+            if (diff <= 60) and (diff >= -60):
+                break;
+            time.sleep(delay)
+        return
+
+    def busy_wait(self, target):
+        self.set_local_time()
+        while 1:
+            diff = self.compare_local_time(target)
+            if (diff <= 0.05):
+                break;
+        return
 
 if __name__ == '__main__':
     # help message
     parser = argparse.ArgumentParser(description='Simulate to login Jing Dong, and click coupon')
     parser.add_argument('-f', '--file', 
                         help='Lottery file', default=None)
+    parser.add_argument('-c', '--code', 
+                        help='Lottery code', default=None)
+    parser.add_argument('-hh', '--hour', 
+                        type=int, help='Target hour', default=10)
+    parser.add_argument('-m', '--minute', 
+                        type=int, help='Target minute', default=0)
     parser.add_argument('-l', '--log', 
                         help='Log file', default=None)
 
@@ -72,3 +126,15 @@ if __name__ == '__main__':
     jd = JDLottery()
     if options.file != None:
         jd.check_file(options.file)
+    elif options.code != None:
+        if not jd.login_by_QR():
+            sys.exit(1)
+        target = (options.hour * 3600) + (options.minute * 60)
+        jd.relax_wait(options.code, target, 5)
+        jd.busy_wait(target)
+        #print jd.get_local_time()
+        for i in range(3):
+            jd.click_lottery("af555c28-4eaf-4ab4-9f9d-9feb818ce6e5", logging.WARNING)
+        #print jd.get_local_time()
+    else:
+        logging.error(u'命令参数错误！！！')
