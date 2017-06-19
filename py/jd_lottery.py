@@ -133,6 +133,6 @@ if __name__ == '__main__':
         jd.relax_wait(options.code, target, 5)
         jd.busy_wait(target)
         for i in range(3):
-            jd.click_lottery("af555c28-4eaf-4ab4-9f9d-9feb818ce6e5", logging.WARNING)
+            jd.click_lottery(options.code, logging.WARNING)
     else:
         logging.error(u'命令参数错误！！！')
