@@ -30,18 +30,7 @@ class JDWrapper(object):
     This class used to simulate login JD
     '''
     
-    def __init__(self, usr_name=None, usr_pwd=None):
-        # cookie info
-        self.trackid = ''
-        self.uuid = ''
-        self.eid = ''
-        self.fp = ''
-
-        self.usr_name = usr_name
-        self.usr_pwd = usr_pwd
-
-        self.interval = 0
-
+    def __init__(self):
         # init url related
         self.home = 'https://passport.jd.com/new/login.aspx'
         self.login = 'https://passport.jd.com/uc/loginService'
