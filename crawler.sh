@@ -17,7 +17,7 @@ python py/jd_crawler.py -p $PROCESS -d $DEPTH -cf $COUPON_FILE -lf $LOTTERY_FILE
 USER="jd_coupon_log"
 PASS="jd123456"
 TO="jd_coupon_log@163.com"
-if [ -e $FILE ]; then
+if [ -e $LOG_FILE ]; then
     echo "Send email to $TO ..."
     python py/email163.py -u $USER -p $PASS -t $TO -f $LOG_FILE
 fi
