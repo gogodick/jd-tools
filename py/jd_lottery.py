@@ -126,7 +126,7 @@ if __name__ == '__main__':
     if options.file != None:
         jd.check_file(options.file)
     elif options.code != None:
-        if not jd.login_by_QR():
+        if not jd.login_website():
             sys.exit(1)
         target = (options.hour * 3600) + (options.minute * 60)
         jd.relax_wait(options.code, target, 5)
