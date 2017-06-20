@@ -96,7 +96,7 @@ class JDLottery(JDWrapper):
         self.set_local_time()
         while 1:
             diff = self.compare_local_time(target)
-            if (diff <= 0.05):
+            if (diff <= 0.002):
                 break;
         return
 
