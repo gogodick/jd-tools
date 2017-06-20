@@ -11,6 +11,7 @@ import bs4
 import requests
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
+import pickle
 import ntplib
 import os
 import time
@@ -243,3 +244,53 @@ class JDWrapper(object):
         if target < current:
             target += one_day
         return target - current
+
+    def save_cookie(self, filename):
+        try:
+            f = open(filename, 'w')
+            pickle.dump(requests.utils.dict_from_cookiejar(self.sess.cookies), f)
+            return True
+        except Exception, e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def load_cookie(self, filename):
+        try:
+            f = open(filename)
+            self.sess.cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
+            return True
+        except Exception, e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def login_webite(self):
+        cookies_file = "cookies.dat"
+        if self.load_cookie(cookies_file):
+            if self.verify_session():
+                return True
+        if not self.login_by_QR():
+            return False
+        self.save_cookie(cookies_file)
+        return True
+    
+    def verify_session(self):
+        url = "https://home.jd.com"
+        try:
+            resp = self.sess.get(url)
+            if resp.status_code != requests.codes.OK:
+                return False
+        except Exception, e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+        soup = bs4.BeautifulSoup(resp.text, "html.parser")
+        tags = soup.select('title')
+        tt = tags[0].text.strip(' \t\r\n')
+        if tt.find(u'登录') == -1:
+            return True
+        return False
+    
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')
+    jd = JDWrapper()
+    if not jd.login_webite():
+        sys.exit(1)
