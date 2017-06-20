@@ -263,7 +263,7 @@ class JDWrapper(object):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def login_webite(self):
+    def login_website(self):
         cookies_file = "cookies.dat"
         if self.load_cookie(cookies_file):
             if self.verify_session():
@@ -292,5 +292,5 @@ class JDWrapper(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')
     jd = JDWrapper()
-    if not jd.login_webite():
+    if not jd.login_website():
         sys.exit(1)
