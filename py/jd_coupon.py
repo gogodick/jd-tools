@@ -95,7 +95,7 @@ if __name__ == '__main__':
         log_hdl.setFormatter(log_fmt)  
         logging.getLogger('').addHandler(log_hdl)
     jd = JDCoupon()
-    if not jd.login_by_QR():
+    if not jd.login_website():
         sys.exit(1)
     jd.click(options.url, logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)
