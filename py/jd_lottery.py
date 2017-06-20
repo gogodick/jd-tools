@@ -38,8 +38,8 @@ class JDLottery(JDWrapper):
             if len(prize_list) > 0:
                 logging.warning(res.group('code'))
                 logging.warning(res.group('url'))
-                for [windate, prizename] in prize_list:
-                    logging.warning(u'{}, {}'.format(windate, prizename))
+                for [windate, prizename, username] in prize_list:
+                    logging.warning(u'{}, {}, {}'.format(windate, prizename, username))
         file.close()
 
     def check_lottery(self, lotterycode):
@@ -50,7 +50,8 @@ class JDLottery(JDWrapper):
         for each in re.findall('{"prizeName":(.*?)}', getwater, re.S):
             prizename = re.findall('"(.*?)","userPin', each, re.S)[0]
             windate = re.findall('"winDate":"(.*?)"', each, re.S)[0]
-            prize_list.append([windate, prizename])
+            username = re.findall('"userPin":"(.*?)"', each, re.S)[0]
+            prize_list.append([windate, prizename, username])
         return prize_list
     
     def click_lottery(self, code, level=None):
