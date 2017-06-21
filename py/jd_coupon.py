@@ -118,4 +118,4 @@ if __name__ == '__main__':
     cnt = 0
     for res in result:
         cnt += res.get()
-    logging.warning(u'运行{}分钟，点击{}次'.format(options.duration, cnt))
+    logging.warning(u'运行{}秒，点击{}次'.format(jd.duration, cnt))
