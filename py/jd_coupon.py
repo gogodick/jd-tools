@@ -47,7 +47,7 @@ class JDCoupon(JDWrapper):
         else:
             return 1
 
-    def click_wait(self, url, target, delay):
+    def relax_wait(self, url, target, delay):
         self.set_local_time()
         while 1:
             self.click(url, logging.INFO)
@@ -55,17 +55,19 @@ class JDCoupon(JDWrapper):
             if (diff <= 50) and (diff >= -50):
                 break;
             time.sleep(delay)
-        return 1
+
+    def busy_wait(self, target):
+        self.set_local_time()
+        while 1:
+            diff = self.compare_local_time(target)
+            if (diff <= jd.duration):
+                break;
 
 def click_task(jd, url, target, id):    
     cnt = 0
     logging.warning(u'进程{}:开始运行'.format(id+1))
-    while(1):
-        if (run_flag.value == 0):
-            return 0
-        diff = jd.compare_local_time(target)
-        if (diff <= jd.duration):
-            break;
+    while(wait_flag.value != 0):
+        pass
     while(run_flag.value != 0):
         cnt = cnt + jd.click(url, None)
     jd.click(url, logging.WARNING)
@@ -98,17 +100,20 @@ if __name__ == '__main__':
         sys.exit(1)
     jd.click(options.url, logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)
-    if (0 == jd.click_wait(options.url, target, 5)):
-        sys.exit(1)
+    jd.relax_wait(options.url, target, 5)
     jd.click(options.url, logging.WARNING)
+    wait_flag = multiprocessing.Value('i', 0)
     run_flag = multiprocessing.Value('i', 0)
     pool = multiprocessing.Pool(processes=options.process+1)
     result = []
     h, m, s = jd.format_local_time()
     logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
+    wait_flag.value = 1
     run_flag.value = 1
     for i in range(options.process):
         result.append(pool.apply_async(click_task, args=(jd, options.url, target, i,)))
+    jd.busy_wait(target)
+    wait_flag.value = 0
     run_time = jd.duration * 2
     time.sleep(run_time)
     h, m, s = jd.format_local_time()
