@@ -25,6 +25,7 @@ class JDCoupon(JDWrapper):
     '''
     This class used to click JD coupon
     '''
+    duration = 5
     def click(self, url, level=None):
         try:
             resp = self.sess.get(url, timeout=5)
@@ -63,7 +64,7 @@ def click_task(jd, url, target, id):
         if (run_flag.value == 0):
             return 0
         diff = jd.compare_local_time(target)
-        if (diff <= 5):
+        if (diff <= jd.duration):
             break;
     while(run_flag.value != 0):
         cnt = cnt + jd.click(url, None)
@@ -79,8 +80,6 @@ if __name__ == '__main__':
                         type=int, help='Target hour', default=10)
     parser.add_argument('-m', '--minute', 
                         type=int, help='Target minute', default=0)
-    parser.add_argument('-d', '--duration', 
-                        type=int, help='Duration in minutes', default=24*60)
     parser.add_argument('-p', '--process', 
                         type=int, help='Number of processes', default=1)
     parser.add_argument('-l', '--log', 
@@ -110,7 +109,7 @@ if __name__ == '__main__':
     run_flag.value = 1
     for i in range(options.process):
         result.append(pool.apply_async(click_task, args=(jd, options.url, target, i,)))
-    time.sleep(options.duration * 60)
+    time.sleep(jd.duration * 2)
     h, m, s = jd.format_local_time()
     logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
     run_flag.value = 0
