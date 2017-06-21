@@ -109,7 +109,8 @@ if __name__ == '__main__':
     run_flag.value = 1
     for i in range(options.process):
         result.append(pool.apply_async(click_task, args=(jd, options.url, target, i,)))
-    time.sleep(jd.duration * 2)
+    run_time = jd.duration * 2
+    time.sleep(run_time)
     h, m, s = jd.format_local_time()
     logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
     run_flag.value = 0
@@ -118,4 +119,4 @@ if __name__ == '__main__':
     cnt = 0
     for res in result:
         cnt += res.get()
-    logging.warning(u'运行{}秒，点击{}次'.format(jd.duration, cnt))
+    logging.warning(u'运行{}秒，点击{}次'.format(run_time, cnt))
