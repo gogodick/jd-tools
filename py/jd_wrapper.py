@@ -266,28 +266,29 @@ class JDWrapper(object):
     def login_website(self):
         cookies_file = "cookies.dat"
         if self.load_cookie(cookies_file):
-            if self.verify_session():
+            if self.verify_login():
                 return True
         if not self.login_by_QR():
             return False
         self.save_cookie(cookies_file)
         return True
     
-    def verify_session(self):
-        url = "https://home.jd.com"
+    def verify_login(self):
+        url = "https://vip.jd.com/member/myJingBean/index.html"
         try:
-            resp = self.sess.get(url)
+            resp = self.sess.get(url, allow_redirects=False)
             if resp.status_code != requests.codes.OK:
                 return False
+            if resp.is_redirect and 'passport' in resp.headers['Location']:
+                return False
+            else:
+                soup = bs4.BeautifulSoup(resp.text, "html.parser")
+                tags = soup.select('p.bean-total-num')
+                logging.warning(u'账户有{}'.format(tags[0].text.strip(' \t\r\n')))
+                return True
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
-        soup = bs4.BeautifulSoup(resp.text, "html.parser")
-        tags = soup.select('title')
-        tt = tags[0].text.strip(' \t\r\n')
-        if tt.find(u'登录') == -1:
-            return True
-        return False
     
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')
