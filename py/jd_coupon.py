@@ -25,7 +25,7 @@ class JDCoupon(JDWrapper):
     '''
     This class used to click JD coupon
     '''
-    duration = 5
+    duration = 10
     def click(self, url, level=None):
         try:
             resp = self.sess.get(url, timeout=5)
@@ -60,7 +60,7 @@ class JDCoupon(JDWrapper):
         self.set_local_time()
         while 1:
             diff = self.compare_local_time(target)
-            if (diff <= jd.duration):
+            if (diff <= 2):
                 break;
 
 def click_task(jd, url, target, id):    
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         result.append(pool.apply_async(click_task, args=(jd, options.url, target, i,)))
     jd.busy_wait(target)
     wait_flag.value = 0
-    run_time = jd.duration * 2
+    run_time = jd.duration
     time.sleep(run_time)
     h, m, s = jd.format_local_time()
     logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
