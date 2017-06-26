@@ -60,7 +60,7 @@ class JDCoupon(JDWrapper):
         self.set_local_time()
         while 1:
             diff = self.compare_local_time(target)
-            if (diff <= 2):
+            if (diff <= 1):
                 break;
 
 def click_task(jd, url, target, id):    
