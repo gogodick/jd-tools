@@ -24,7 +24,7 @@ class JDSign(JDWrapper):
     '''
     This class is used to sign
     '''
-    def sign_vip(self):
+    def pc_sign_vip(self):
         index_url = 'https://vip.jd.com'
         sign_url = 'https://vip.jd.com/common/signin.html'
 
@@ -55,7 +55,7 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def sign_finance(self):
+    def pc_sign_finance(self):
         index_url = 'https://vip.jr.jd.com'
         sign_url = 'https://vip.jr.jd.com/newSign/doSign'
 
@@ -80,6 +80,161 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def pick_gb(self):
+        job_gb_url = 'https://bk.jd.com/m/channel/login/recDakaGb.html'
+        # 任务列表在 https://bk.jd.com/m/money/doJobMoney.html 中看
+        # 领钢镚的任务的 id 是 82
+        try:
+            resp = self.sess.get(job_gb_url)
+            pick_success = False
+            as_json = resp.json()
+            pick_success = as_json['success']
+            message = as_json['resultMessage']
+            logging.info('钢镚领取成功: {}; Message: {}'.format(pick_success, message))
+            return pick_success
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_whitecard(self):
+        sign_url = 'https://bk.jd.com/m/channel/login/clock.html'
+        
+        logging.info(u'签到京东白卡')
+        try:
+            resp = self.sess.get(sign_url)
+            sign_success = False
+            if resp.ok:
+                as_json = resp.json()
+                sign_success = as_json['success']
+                message = as_json['resultMessage']
+                if not sign_success and as_json['resultCode'] == '0003':
+                    # 已打卡 7 次, 需要先去 "任务" 里完成领一个钢镚的任务...
+                    logging.info('已打卡 7 次, 去完成领钢镚任务...')
+                    pick_success = self.pick_gb()
+                    if pick_success:
+                        # 钢镚领取成功, 重新开始打卡任务
+                        return self.mobile_sign_whitecard()
+                    else:
+                        message = '钢镚领取任务未成功完成.'
+                logging.info('打卡成功: {}; Message: {}'.format(sign_success, message))
+            else:
+                logging.error('打卡失败: Status code: {}; Reason: {}'.format(resp.status_code, resp.reason))
+            return sign_success
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def pick_poker(self, poker):
+        try:
+            poker_url = 'https://ld.m.jd.com/card/getCardResult.action'
+            poker_to_pick = random.randint(1, len(poker['awardList']))
+            resp = self.sess.get(self.poker_url, params={'index': poker_to_pick})
+            pick_success = False
+            as_json = resp.json()
+            pick_success = (as_json['drawStatus'] == 0)
+            message = as_json.get('signText') or as_json['drawText']
+            logging.info('翻牌成功: {}; Message: {}'.format(pick_success, message))
+            return pick_success
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_bean(self):
+        sign_url = 'https://ld.m.jd.com/SignAndGetBeansN/signStart.action'
+        logging.info(u'签到京东客户端')
+        try:
+            resp = self.sess.get(sign_url)
+            sign_success = False
+            if resp.ok:
+                as_json = resp.json()
+                sign_success = (as_json['status'] == 1)
+                message = as_json['signText']
+                logging.info('签到成功: {}; Message: {}'.format(sign_success, message))
+                poker = as_json['poker']
+                # "complated": 原文如此, 服务端的拼写错误...
+                poker_picked = poker['complated']
+                if not poker_picked:
+                    self.pick_poker(poker)
+            else:
+                logging.error('签到失败: Status code: {}; Reason: {}'.format(resp.status_code, resp.reason))
+            return sign_success
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_gb(self):
+        sign_url = 'https://ms.jr.jd.com/gw/generic/base/h5/m/baseSignInEncrypt'
+        logging.info(u'签到京东客户端钢蹦')
+        try:
+            payload = {
+                'reqData': '{}',
+                'source': 'jrm'
+            }
+            resp = self.sess.post(sign_url, data=payload)
+            as_json = resp.json()
+            if 'resultData' in as_json:
+                result_data = as_json['resultData']
+                sign_success = result_data['isSuccess']
+                message = result_data['showMsg']
+                # 参见 daka_app_min.js, 第 1893 行
+                continuity_days = result_data['continuityDays']
+                if continuity_days > 1:
+                    message += '; 签到天数: {}'.format(continuity_days)
+            else:
+                sign_success = False
+                message = as_json.get('resultMsg') or as_json.get('resultMessage')
+            logging.info('打卡成功: {}; Message: {}'.format(sign_success, message))
+            return sign_success
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_fbank(self):
+        sign_url = 'https://fbank.m.jd.com/api.json?functionId=fBankSign'
+        logging.info(u'签到京东流量加油站')
+        try:
+            response = self.sess.get(sign_url).json()
+            if response['success']:
+                sign_success = ('errorCode' not in response)
+                message = response.get('errorMessage') or response.get('message')
+                logging.info('签到成功: {}; Message: {}.'.format(sign_success, message))
+                return sign_success
+            else:
+                message = response.get('message') or response.get('errorMessage')
+                logging.error('签到失败: {}'.format(message))
+                return False
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_redpacket(self):
+        sign_url = 'https://ms.jr.jd.com/gw/generic/activity/h5/m/receiveZhiBoXjkRedPacket'
+        logging.info(u'签到京东红包')
+        try:
+            # 参见 red_packet_index.js
+            payload = {
+                'reqData': '{"activityCode":"zhibo_xjk"}',
+            }
+            response = self.sess.post(sign_url, data=payload).json()
+            if response['resultCode'] == 0:
+                sign_success = response['resultData']['success']
+                if sign_success:
+                    logging.info('领取成功, 获得 {} 元.'.format(response['resultData']['data']))
+                else:
+                    message = response['resultData'].get('msg') or response.get('resultMsg')
+                    logging.info('领取结果: {}'.format(message))
+                    if response['resultData'].get('code') == '03':
+                        # 当 code 为 03 时, 表示今天已领过了, 因为领取前无法知道是否领过, 此处也当做任务成功返回
+                        sign_success = True
+                return sign_success
+            else:
+                message = response.get('resultMsg')
+                logging.error('领取失败: {}'.format(message))
+                return False
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
@@ -88,5 +243,10 @@ if __name__ == '__main__':
         sys.exit(1)
     func_list = dir(jd)
     for func in func_list:
-        if func.find('sign') == 0:
+        if func.find('pc_sign') == 0:
+            jd.__getattribute__(func)()
+    if not jd.mobile_login():
+        sys.exit(1)
+    for func in func_list:
+        if func.find('mobile_sign') == 0:
             jd.__getattribute__(func)()
