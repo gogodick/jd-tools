@@ -15,6 +15,7 @@ import pickle
 import ntplib
 import os
 import time
+import re
 import math
 import json
 import random
@@ -33,12 +34,6 @@ class JDWrapper(object):
     '''
     
     def __init__(self):
-        # init url related
-        self.home = 'https://passport.jd.com/new/login.aspx'
-        self.login = 'https://passport.jd.com/uc/loginService'
-        self.imag = 'https://authcode.jd.com/verify/image'
-        self.auth = 'https://passport.jd.com/uc/showAuthCode'
-        
         self.sess = requests.Session()
 
         self.headers = {
@@ -71,7 +66,72 @@ class JDWrapper(object):
             return False
         return True
 
-    def login_by_QR(self):
+    def get_network_time(self):
+        try:
+            client = ntplib.NTPClient()
+            response = client.request('ntp2.aliyun.com')
+        except Exception, e:
+            logging.warning('Exp {0} : {1}'.format(FuncName(), e))
+            return None
+        else:
+            #return response.tx_time + response.delay
+            return response.tx_time
+
+    delta_time = None
+
+    def set_local_time(self):
+        logging.warning(u'开始校准系统时间')
+        for i in range(3):
+            ttime = self.get_network_time()
+            stime = time.time()
+            if (ttime != None):
+                break;
+        if (ttime == None):
+            logging.warning(u'无法获取网络时间！！！')
+            return
+        self.delta_time = ttime - stime
+        logging.warning(u'系统时间差为{}秒'.format(self.delta_time))
+
+    def get_local_time(self):
+        if self.delta_time != None:
+            return time.time() + self.delta_time
+        else:
+            logging.error(u'本地时间没有校准！！！')
+            return time.time()
+    
+    def format_local_time(self):
+        ttime = time.localtime(self.get_local_time())
+        return ttime.tm_hour, ttime.tm_min, ttime.tm_sec
+    
+    def compare_local_time(self, target):
+        one_day = 86400.0; # 24 * 60 *60
+        local_time = self.get_local_time()
+        fraction = local_time - math.floor(local_time)
+        ttime = time.localtime(local_time)
+        current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec + fraction
+        if target < current:
+            target += one_day
+        return target - current
+
+    def save_cookie(self, filename):
+        try:
+            f = open(filename, 'w')
+            pickle.dump(requests.utils.dict_from_cookiejar(self.sess.cookies), f)
+            return True
+        except Exception, e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def load_cookie(self, filename):
+        try:
+            f = open(filename)
+            self.sess.cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
+            return True
+        except Exception, e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def pc_login_by_QR(self):
         # jd login by QR code
         try:
             logging.warning('+++++++++++++++++++++++++++++++++++++++++++++++++++++++')
@@ -118,7 +178,7 @@ class JDWrapper(object):
                 self.cookies[k] = v
 
             ## save QR code
-            image_file = 'qr.png'
+            image_file = 'pc_qr.png'
             with open (image_file, 'wb') as f:
                 for chunk in resp.iter_content(chunk_size=1024):
                     f.write(chunk)
@@ -198,82 +258,17 @@ class JDWrapper(object):
 
         return False
 
-    def get_network_time(self):
-        try:
-            client = ntplib.NTPClient()
-            response = client.request('ntp2.aliyun.com')
-        except Exception, e:
-            logging.warning('Exp {0} : {1}'.format(FuncName(), e))
-            return None
-        else:
-            #return response.tx_time + response.delay
-            return response.tx_time
-
-    delta_time = None
-
-    def set_local_time(self):
-        logging.warning(u'开始校准系统时间')
-        for i in range(3):
-            ttime = self.get_network_time()
-            stime = time.time()
-            if (ttime != None):
-                break;
-        if (ttime == None):
-            logging.warning(u'无法获取网络时间！！！')
-            return
-        self.delta_time = ttime - stime
-        logging.warning(u'系统时间差为{}秒'.format(self.delta_time))
-
-    def get_local_time(self):
-        if self.delta_time != None:
-            return time.time() + self.delta_time
-        else:
-            logging.error(u'本地时间没有校准！！！')
-            return time.time()
-    
-    def format_local_time(self):
-        ttime = time.localtime(self.get_local_time())
-        return ttime.tm_hour, ttime.tm_min, ttime.tm_sec
-    
-    def compare_local_time(self, target):
-        one_day = 86400.0; # 24 * 60 *60
-        local_time = self.get_local_time()
-        fraction = local_time - math.floor(local_time)
-        ttime = time.localtime(local_time)
-        current = (ttime.tm_hour * 3600) + (ttime.tm_min * 60) + ttime.tm_sec + fraction
-        if target < current:
-            target += one_day
-        return target - current
-
-    def save_cookie(self, filename):
-        try:
-            f = open(filename, 'w')
-            pickle.dump(requests.utils.dict_from_cookiejar(self.sess.cookies), f)
-            return True
-        except Exception, e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-
-    def load_cookie(self, filename):
-        try:
-            f = open(filename)
-            self.sess.cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
-            return True
-        except Exception, e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-
-    def login_website(self):
-        cookies_file = "cookies.dat"
+    def pc_login(self):
+        cookies_file = "pc_cookies.dat"
         if self.load_cookie(cookies_file):
-            if self.verify_login():
+            if self.pc_verify_login():
                 return True
-        if not self.login_by_QR():
+        if not self.pc_login_by_QR():
             return False
         self.save_cookie(cookies_file)
         return True
     
-    def verify_login(self):
+    def pc_verify_login(self):
         url = "https://vip.jd.com/member/myJingBean/index.html"
         try:
             resp = self.sess.get(url, allow_redirects=False)
@@ -289,9 +284,163 @@ class JDWrapper(object):
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
-    
+
+    def hash33(self, t):
+        e = 0
+        for i in range(len(t)):
+            e+=(e<<5)+ord(t[i])
+        return 2147483647&e
+
+    def g_tk(self):
+        h = 5381
+        cookies = self.sess.cookies
+        s = cookies.get('skey') or cookies.get('p_skey') or ''
+        for c in s:
+            h += (h << 5) + ord(c)
+        return h & 0x7fffffff
+
+    def mobile_verify_login(self):
+        url = "https://home.m.jd.com/wallet/wallet.action"
+        try:
+            resp = self.sess.get(url, allow_redirects=False)
+            if resp.status_code != requests.codes.OK:
+                print resp.status_code
+                return False
+            if resp.is_redirect and 'passport' in resp.headers['Location']:
+                print resp.headers
+                return False
+            else:
+                soup = bs4.BeautifulSoup(resp.text, "html.parser")
+                tags = soup.select('div.jingdou-num')
+                logging.warning(u'账户有{}'.format(tags[0].text.strip(' \t\r\n')))
+                return True
+        except Exception, e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_login_by_QR(self):
+        try:
+            logging.warning('+++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            logging.warning(u'{0} > 请打开QQ手机客户端，准备扫码登陆:'.format(time.ctime()))
+            resp = self.sess.get("https://plogin.m.jd.com/cgi-bin/m/qqlogin",
+                params = {
+                    'appid': 100,
+                    'returnurl': 'https://m.jd.com'
+                }
+            )
+            if resp.status_code != requests.codes.OK:
+                return False
+            pattern = re.compile(r'client_id=(?P<client_id>.*)&redirect_uri=(?P<redirect_uri>.*)&state=(?P<state>.*)')
+            res = pattern.search(resp.url)
+            if res == None:
+                logging.error(u'无法匹配URL')
+                return False
+            logging.warning(u'{}: {} : {}'.format(res.group('client_id'), res.group('redirect_uri'), res.group('state')))
+            client_id = res.group('client_id')
+            redirect_uri = res.group('redirect_uri')
+            redirect_uri = redirect_uri.replace('%3A',':')
+            redirect_uri = redirect_uri.replace('%2F','/')
+            redirect_uri = redirect_uri.replace('%3F','?')
+            redirect_uri = redirect_uri.replace('%3D','=')
+            state = res.group('state')
+             
+            resp = self.sess.get(
+                "https://ssl.ptlogin2.qq.com/ptqrshow",
+                params = {
+                    'appid': 716027609,
+                    'e': 2,
+                    'l': 'M',
+                    's':3,
+                    'd':72,
+                    'v':4
+                }
+            )
+            if resp.status_code != requests.codes.OK:
+                return False
+            image_file = 'mobile_qr.png'
+            with open (image_file, 'wb') as f:
+                for chunk in resp.iter_content(chunk_size=1024):
+                    f.write(chunk)
+            ## scan QR code with phone
+            if 'Linux' in platform.system():
+                os.system('eog ' + image_file + '&')
+            else:
+                os.system('explorer ' + image_file)
+             
+            pattern = re.compile(r'\(\'(?P<status>\d+)\',\'.*\',\'.*\',\'(?P<info>.*)\',')
+            # check if QR code scanned
+            qr_ticket = None
+            retry_times = 100
+            while retry_times:
+                retry_times -= 1
+                resp = self.sess.get("https://ssl.ptlogin2.qq.com/ptqrlogin",
+                    params = {
+                        'u1': 'https://graph.qq.com/oauth/login_jump',
+                        'ptqrtoken': self.hash33(self.sess.cookies['qrsig']),
+                        'ptredirect': 0,
+                        'h': 1,
+                        't': 1,
+                        'g': 1,
+                        'from_ui': 1,
+                        'ptlang': 2052,
+                        'action': 0-0-1498546581374,
+                        'js_ver': 10222,
+                        'js_type': 1,
+                        'login_sig': '',
+                        'pt_uistyle': 40,
+                        'aid': 716027609,
+                        'daid': 383,
+                        'pt_3rd_aid': 100273020
+                    }
+                )
+                if resp.status_code != requests.codes.OK:
+                    logging.error(u'访问失败')
+                    break
+                res = pattern.search(resp.text)
+                if res == None:
+                    logging.error(u'无法匹配返回页面')
+                    break
+                logging.warning(u'{} : {}'.format(res.group('status'), res.group('info')))
+                if res.group('status') == '0':
+                    qr_ticket = res.group('status')
+                    break;
+                elif res.group('status') == '65':
+                    break;
+                time.sleep(3)
+            data = {
+                'response_type': 'code',
+                'client_id': client_id,
+                'redirect_uri': redirect_uri,
+                'state': state,
+                'src': '1',
+                'g_tk': str(self.g_tk()),
+                'auth_time': int(time.time())
+            }
+            
+            resp = self.sess.post('https://graph.qq.com/oauth2.0/authorize', data=data)
+            if 'jd.com' not in resp.url:
+                logging.error('通过 QQ 登录京东失败.')
+                return False
+            logging.warning('通过 QQ 登录京东成功.')        
+            return True
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_login(self):
+        cookies_file = "mobile_cookies.dat"
+        if self.load_cookie(cookies_file):
+            if self.mobile_verify_login():
+                return True
+        if not self.mobile_login_by_QR():
+            return False
+        self.save_cookie(cookies_file)
+        return True
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')
     jd = JDWrapper()
-    if not jd.login_website():
+    if not jd.pc_login():
+        sys.exit(1)
+    if not jd.mobile_login():
         sys.exit(1)
