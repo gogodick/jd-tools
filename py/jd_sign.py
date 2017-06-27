@@ -84,7 +84,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
     jd = JDSign()
-    if not jd.login_website():
+    if not jd.pc_login():
         sys.exit(1)
     func_list = dir(jd)
     for func in func_list:
