@@ -12,7 +12,6 @@ import requests
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 import pickle
-import ntplib
 import os
 import time
 import re
@@ -68,14 +67,15 @@ class JDWrapper(object):
 
     def get_network_time(self):
         try:
-            client = ntplib.NTPClient()
-            response = client.request('ntp2.aliyun.com')
+            data = {'r': random.random()}
+            headers = {'Referer': 'http://a.jd.com/'}
+            resp = self.sess.get('http://a.jd.com/ajax/queryServerData.html', params=data, headers=headers)
+            as_json = resp.json()
         except Exception, e:
             logging.warning('Exp {0} : {1}'.format(FuncName(), e))
             return None
         else:
-            #return response.tx_time + response.delay
-            return response.tx_time
+            return as_json['serverTime'] / 1000.0
 
     delta_time = None
 

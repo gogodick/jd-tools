@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
-
-import ntplib
 import os
 import time
+import random
 import logging
+from jd_wrapper import JDWrapper
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+# get function name
+FuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name
 
 class progressbar(object):
     def __init__(self, finalcount, block_char='.'):
@@ -35,28 +38,31 @@ class progressbar(object):
         if percentcomplete == 100:
             self.f.write("\n")
 
-def get_network_time():
-    try:
-        client = ntplib.NTPClient()
-        response = client.request('ntp2.aliyun.com')
-    except Exception, e:
-        logging.warning('Exp {0} : {1}'.format(FuncName(), e))
-        return None
-    else:
-        return response.tx_time
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')
 
-diff = get_network_time() - time.time()
-min_diff = diff
-max_diff = diff
-pb = progressbar(60, "#")
-for i in range(60):
-    diff = get_network_time() - time.time()
-    if diff > max_diff:
-        max_diff = diff
-    if diff < min_diff:
-        min_diff = diff
-    time.sleep(1)
-    pb.progress(i)
-pb.progress(60)
-jitter = (max_diff - min_diff) * 1000
-print 'Jitter is {} ms'.format(int(jitter))
+    jd = JDWrapper()
+    nt = jd.get_network_time()
+    tt = time.time()
+    if None == nt:
+        sys.exit(1)
+    diff = nt - tt
+    logging.warning(u'系统时间差为{}秒'.format(diff))
+    min_diff = diff
+    max_diff = diff
+    pb = progressbar(60, "#")
+    for i in range(60):
+        nt = jd.get_network_time()
+        tt = time.time()
+        if None == nt:
+            sys.exit(1)
+        diff = nt - tt
+        if diff > max_diff:
+            max_diff = diff
+        if diff < min_diff:
+            min_diff = diff
+        time.sleep(1)
+        pb.progress(i)
+    pb.progress(60)
+    jitter = (max_diff - min_diff) * 1000
+    logging.warning(u'Jitter is {} ms'.format(int(jitter)))
