@@ -104,7 +104,7 @@ class JDCoupon(JDWrapper):
         while 1:
             self.click(logging.INFO)
             diff = self.compare_local_time(target)
-            if (diff <= 50) and (diff >= -50):
+            if (diff <= 60) and (diff >= -60):
                 break;
             time.sleep(delay)
 
