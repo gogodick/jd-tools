@@ -1,9 +1,9 @@
 KEY="374b5335e6d14ab88f87061ef41f7330"
 ROLEID="7140368"
 HOUR=12
-MINUTE=46
+MINUTE=00
 PROCESS=32
-FILE="coupon.txt"
+FILE="pc_coupon.txt"
 if [ -e $FILE ]; then
     rm $FILE
 fi
