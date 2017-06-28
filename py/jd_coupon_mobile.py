@@ -25,7 +25,7 @@ class JDCoupon(JDWrapper):
     '''
     This class used to click JD coupon
     '''
-    duration = 10
+    duration = 5
     sid = ""
     codeKey = ""
     validateCode = ""
@@ -112,7 +112,7 @@ class JDCoupon(JDWrapper):
         self.set_local_time()
         while 1:
             diff = self.compare_local_time(target)
-            if (diff <= 1):
+            if (diff <= 0.5):
                 break;
 
 def click_task(jd, target, id):    
