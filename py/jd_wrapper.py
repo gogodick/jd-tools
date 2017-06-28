@@ -264,6 +264,7 @@ class JDWrapper(object):
         if self.load_cookie(cookies_file):
             if self.pc_verify_login():
                 return True
+        self.sess.cookies.clear()
         if not self.pc_login_by_QR():
             return False
         self.save_cookie(cookies_file)
@@ -434,6 +435,7 @@ class JDWrapper(object):
         if self.load_cookie(cookies_file):
             if self.mobile_verify_login():
                 return True
+        self.sess.cookies.clear()
         if not self.mobile_login_by_QR():
             return False
         self.save_cookie(cookies_file)
