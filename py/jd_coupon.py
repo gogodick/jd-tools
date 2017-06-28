@@ -89,8 +89,8 @@ class JDCoupon(JDWrapper):
             resp = self.sess.post(url, data = data, timeout=5)
             if not resp.ok:
                 return 0
-            as_json = resp.json()
             if level != None:
+                as_json = resp.json()
                 logging.log(level, u'{}, {}'.format(as_json['isSuccess'], as_json['returnMsg']))
         except Exception, e:
             if level != None:
