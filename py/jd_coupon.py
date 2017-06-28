@@ -26,20 +26,72 @@ class JDCoupon(JDWrapper):
     This class used to click JD coupon
     '''
     duration = 10
-    def click(self, url, level=None):
+    sid = ""
+    codeKey = ""
+    validateCode = ""
+    roleId = ""
+    key = ""
+    couponKey = ""
+    activeId = ""
+    couponType = ""
+    def setup(self, key, role_id):
         try:
-            resp = self.sess.get(url, timeout=5)
+            data = {
+                'key': key, 
+                'roleId': role_id, 
+            } 
+            resp = self.sess.get('http://coupon.m.jd.com/coupons/show.action', params = data)
+            if resp.status_code != requests.codes.OK:
+                return False
+            soup = bs4.BeautifulSoup(resp.text, "html.parser")
+            tags = soup.select('input#sid')
+            if len(tags) != 0:
+                self.sid = str(tags[0]['value'])
+            tags = soup.select('input#codeKey')
+            if len(tags) != 0:
+                self.codeKey = str(tags[0]['value'])
+            tags = soup.select('input#validateCodeSign')
+            if len(tags) != 0:
+                self.validateCode = str(tags[0]['value'])
+            tags = soup.select('input#roleId')
+            if len(tags) != 0:
+                self.roleId = str(tags[0]['value'])
+            tags = soup.select('input#key')
+            if len(tags) != 0:
+                self.key = str(tags[0]['value'])
+            tags = soup.select('input#couponKey')
+            if len(tags) != 0:
+                self.couponKey = str(tags[0]['value'])
+            tags = soup.select('input#activeId')
+            if len(tags) != 0:
+                self.activeId = str(tags[0]['value'])
+            tags = soup.select('input#couponType')
+            if len(tags) != 0:
+                self.couponType = str(tags[0]['value'])
+            return True
+        except Exception, e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+    
+    def click(self, level=None):
+        try:
+            url = 'http://coupon.m.jd.com/coupons/submit.json'
+            data = {
+                'sid': self.sid, 
+                'codeKey': self.codeKey, 
+                'validateCode': self.validateCode, 
+                'roleId': self.roleId, 
+                'key': self.key, 
+                'couponKey': self.couponKey, 
+                'activeId': self.activeId, 
+                'couponType': self.couponType, 
+            } 
+            resp = self.sess.post(url, data = data, timeout=5)
+            if not resp.ok:
+                return 0
+            as_json = resp.json()
             if level != None:
-                soup = bs4.BeautifulSoup(resp.text, "html.parser")
-                tag1 = soup.select('title')
-                tag2 = soup.select('div.content')
-                if len(tag2):
-                    logging.log(level, u'{}'.format(tag2[0].text.strip(' \t\r\n')))
-                else:
-                    if len(tag1):
-                        logging.log(level, u'{}'.format(tag1[0].text.strip(' \t\r\n')))
-                    else:
-                        logging.log(level, u'页面错误')
+                logging.log(level, u'{}, {}'.format(as_json['isSuccess'], as_json['returnMsg']))
         except Exception, e:
             if level != None:
                 logging.log(level, 'Exp {0} : {1}'.format(FuncName(), e))
@@ -47,10 +99,10 @@ class JDCoupon(JDWrapper):
         else:
             return 1
 
-    def relax_wait(self, url, target, delay):
+    def relax_wait(self, target, delay):
         self.set_local_time()
         while 1:
-            self.click(url, logging.INFO)
+            self.click(logging.INFO)
             diff = self.compare_local_time(target)
             if (diff <= 50) and (diff >= -50):
                 break;
@@ -63,21 +115,23 @@ class JDCoupon(JDWrapper):
             if (diff <= 1):
                 break;
 
-def click_task(jd, url, target, id):    
+def click_task(jd, target, id):    
     cnt = 0
     logging.warning(u'进程{}:开始运行'.format(id+1))
     while(wait_flag.value != 0):
         pass
     while(run_flag.value != 0):
-        cnt = cnt + jd.click(url, None)
-    jd.click(url, logging.WARNING)
+        cnt = cnt + jd.click(None)
+    jd.click(logging.WARNING)
     return cnt
 
 if __name__ == '__main__':
     # help message
     parser = argparse.ArgumentParser(description='Simulate to login Jing Dong, and click coupon')
-    parser.add_argument('-u', '--url', 
-                        help='Coupon URL', required=True)
+    parser.add_argument('-k', '--key', 
+                        help='Coupon key', required=True)
+    parser.add_argument('-r', '--role_id', 
+                        help='Coupon role id', required=True)
     parser.add_argument('-hh', '--hour', 
                         type=int, help='Target hour', default=10)
     parser.add_argument('-m', '--minute', 
@@ -96,12 +150,13 @@ if __name__ == '__main__':
         log_hdl.setFormatter(log_fmt)  
         logging.getLogger('').addHandler(log_hdl)
     jd = JDCoupon()
-    if not jd.pc_login():
+    if not jd.mobile_login():
         sys.exit(1)
-    jd.click(options.url, logging.WARNING)
+    jd.setup(options.key, options.role_id)
+    jd.click(logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)
-    jd.relax_wait(options.url, target, 5)
-    jd.click(options.url, logging.WARNING)
+    jd.relax_wait(target, 5)
+    jd.click(logging.WARNING)
     wait_flag = multiprocessing.Value('i', 0)
     run_flag = multiprocessing.Value('i', 0)
     pool = multiprocessing.Pool(processes=options.process+1)
@@ -111,7 +166,7 @@ if __name__ == '__main__':
     wait_flag.value = 1
     run_flag.value = 1
     for i in range(options.process):
-        result.append(pool.apply_async(click_task, args=(jd, options.url, target, i,)))
+        result.append(pool.apply_async(click_task, args=(jd, target, i,)))
     jd.busy_wait(target)
     wait_flag.value = 0
     run_time = jd.duration
