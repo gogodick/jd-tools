@@ -128,7 +128,7 @@ class JDSign(JDWrapper):
         try:
             poker_url = 'https://ld.m.jd.com/card/getCardResult.action'
             poker_to_pick = random.randint(1, len(poker['awardList']))
-            resp = self.sess.get(self.poker_url, params={'index': poker_to_pick})
+            resp = self.sess.get(poker_url, params={'index': poker_to_pick})
             pick_success = False
             as_json = resp.json()
             pick_success = (as_json['drawStatus'] == 0)
