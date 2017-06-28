@@ -28,7 +28,7 @@ class JDCoupon(JDWrapper):
     duration = 5
     coupon_url = ""
     def setup(self, key, role_id):
-        self.coupon_url = "http://coupon.jd.com/ilink/couponActiveFront/front_index.action?key="+key+"&roleId="+role_id+"&to=www.jd.com"
+        self.coupon_url = "http://coupon.jd.com/ilink/couponSendFront/send_index.action?key="+key+"&roleId="+role_id+"&to=www.jd.com"
     def click(self, level=None):
         try:
             resp = self.sess.get(self.coupon_url, timeout=5)
