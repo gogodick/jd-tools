@@ -3,7 +3,7 @@ ROLEID="7190126"
 HOUR=12
 MINUTE=00
 PROCESS=32
-FILE="coupon.txt"
+FILE="mobile_coupon.txt"
 if [ -e $FILE ]; then
     rm $FILE
 fi
