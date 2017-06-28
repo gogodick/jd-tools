@@ -11,12 +11,12 @@ python -m pip install beautifulsoup4
 ```
 Ubuntu Desktop is also supported.
 ## Usage
-### jd_coupon.py
-Please refer to coupon.sh.
-1. URL is your coupon url.
-2. HOUR is hour for coupon release time.
-3. MINUTE is minute for coupon release time.
-4. DURATION is the click duration in minutes.
+### jd_coupon_pc.py
+Please refer to coupon_pc.sh.
+1. KEY is your coupon key.
+2. ROLEID is your coupon role id.
+3. HOUR is hour for coupon release time.
+4. MINUTE is minute for coupon release time.
 5. PROCESS is the number of processes used for click.
 6. FILE is used for log.
 7. USER is the email account for 163.
@@ -25,7 +25,7 @@ Please refer to coupon.sh.
 
 And the result is like this:
 ``` cmd
-$ source coupon.sh
+$ source coupon_pc.sh
 Login to JD ...
 11:35:58 - (WARNING) +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 11:35:58 - (WARNING) Mon Jun 12 11:35:58 2017 > 请打开京东手机客户端，准备扫码登陆:
