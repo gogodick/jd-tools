@@ -8,7 +8,7 @@ if [ -e $FILE ]; then
     rm $FILE
 fi
 echo "Login to JD ..."
-python py/jd_coupon.py -k $KEY -r $ROLEID -hh $HOUR -m $MINUTE -p $PROCESS -l $FILE
+python py/jd_coupon_mobile.py -k $KEY -r $ROLEID -hh $HOUR -m $MINUTE -p $PROCESS -l $FILE
 USER="jd_coupon_log"
 PASS="jd123456"
 TO="jd_coupon_log@163.com"
