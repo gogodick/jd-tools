@@ -259,6 +259,7 @@ class JDWrapper(object):
         return False
 
     def pc_login(self):
+        self.sess.cookies.clear()
         cookies_file = "pc_cookies.dat"
         if self.load_cookie(cookies_file):
             if self.pc_verify_login():
@@ -428,6 +429,7 @@ class JDWrapper(object):
             return False
 
     def mobile_login(self):
+	self.sess.cookies.clear()
         cookies_file = "mobile_cookies.dat"
         if self.load_cookie(cookies_file):
             if self.mobile_verify_login():
