@@ -314,7 +314,10 @@ class JDWrapper(object):
             else:
                 soup = bs4.BeautifulSoup(resp.text, "html.parser")
                 tags = soup.select('div.jingdou-num')
-                logging.warning(u'账户有{}'.format(tags[0].text.strip(' \t\r\n')))
+                info = tags[0].text.strip(' \t\r\n')
+                if len(info) == 0:
+                    return False
+                logging.warning(u'账户有{}'.format(info))
                 return True
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
