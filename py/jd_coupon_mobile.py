@@ -152,7 +152,8 @@ if __name__ == '__main__':
     jd = JDCoupon()
     if not jd.mobile_login():
         sys.exit(1)
-    jd.setup(options.key, options.role_id)
+    if not jd.setup(options.key, options.role_id):
+        sys.exit(1)
     jd.click(logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)
     jd.relax_wait(target, 5)
