@@ -6,7 +6,6 @@ And the original code is from https://github.com/Adyzng/jd-autobuy, and his code
 Please install Cygwin with python and pip, and use below commands to install modules:
 ``` cmd
 python -m pip install requests
-python -m pip install ntplib
 python -m pip install beautifulsoup4
 ```
 Ubuntu Desktop is also supported.
