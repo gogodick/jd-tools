@@ -11,7 +11,7 @@ import bs4
 import requests
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
-import pickle
+import cookielib
 import os
 import time
 import re
@@ -115,8 +115,9 @@ class JDWrapper(object):
 
     def save_cookie(self, filename):
         try:
-            f = open(filename, 'w')
-            pickle.dump(requests.utils.dict_from_cookiejar(self.sess.cookies), f)
+            save_cookiejar = cookielib.MozillaCookieJar()
+            requests.utils.cookiejar_from_dict({c.name: c.value for c in self.sess.cookies}, save_cookiejar)
+            save_cookiejar.save(filename, ignore_discard=True)
             return True
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
@@ -124,8 +125,10 @@ class JDWrapper(object):
 
     def load_cookie(self, filename):
         try:
-            f = open(filename)
-            self.sess.cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
+            load_cookiejar = cookielib.MozillaCookieJar()
+            load_cookiejar.load(filename, ignore_discard=True)
+            load_cookies = requests.utils.dict_from_cookiejar(load_cookiejar)
+            self.sess.cookies = requests.utils.cookiejar_from_dict(load_cookies)
             return True
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
