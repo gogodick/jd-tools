@@ -99,6 +99,23 @@ class JDCoupon(JDWrapper):
         else:
             return 1
 
+    def click_fast(self, count):
+        try:
+            url = 'http://coupon.m.jd.com/coupons/submit.json'
+            data = {
+                'sid': self.sid, 
+                'codeKey': self.codeKey, 
+                'validateCode': self.validateCode, 
+                'roleId': self.roleId, 
+                'key': self.key, 
+                'couponKey': self.couponKey, 
+                'activeId': self.activeId, 
+                'couponType': self.couponType, 
+            } 
+            return [self.sess.post(url, data = data, timeout=5) for i in range(count)]
+        except Exception, e:
+            return []
+
     def relax_wait(self, target, delay):
         self.set_local_time()
         while 1:
@@ -120,9 +137,13 @@ def click_task(jd, target, id):
     logging.warning(u'进程{}:开始运行'.format(id+1))
     while(wait_flag.value != 0):
         pass
+    result = []
     while(run_flag.value != 0):
-        cnt = cnt + jd.click(None)
+        result += jd.click_fast(8)
     jd.click(logging.WARNING)
+    for resp in result:
+        if resp.ok:
+            cnt += 1
     return cnt
 
 if __name__ == '__main__':
