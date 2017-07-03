@@ -115,9 +115,10 @@ class JDWrapper(object):
 
     def save_cookie(self, filename):
         try:
-            save_cookiejar = cookielib.MozillaCookieJar()
-            requests.utils.cookiejar_from_dict({c.name: c.value for c in self.sess.cookies}, save_cookiejar)
-            save_cookiejar.save(filename, ignore_discard=True)
+            for ck in self.sess.cookies:
+                if ck.expires == None:
+                    ck.expires = int(time.time()) + 3600 * 24
+            self.sess.cookies.save(filename, ignore_discard=True)
             return True
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
@@ -126,9 +127,11 @@ class JDWrapper(object):
     def load_cookie(self, filename):
         try:
             load_cookiejar = cookielib.MozillaCookieJar()
-            load_cookiejar.load(filename, ignore_discard=True)
-            load_cookies = requests.utils.dict_from_cookiejar(load_cookiejar)
-            self.sess.cookies = requests.utils.cookiejar_from_dict(load_cookies)
+            try:
+                load_cookiejar.load(filename, ignore_discard=True)
+            except:
+                pass
+            self.sess.cookies = load_cookiejar
             return True
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
@@ -299,7 +302,14 @@ class JDWrapper(object):
     def g_tk(self):
         h = 5381
         cookies = self.sess.cookies
-        s = cookies.get('skey') or cookies.get('p_skey') or ''
+        s = ''
+        for ck in self.sess.cookies:
+            if ck.name == 'skey':
+                s = ck.value
+                break
+            if ck.name == 'p_skey':
+                s = ck.value
+                break
         for c in s:
             h += (h << 5) + ord(c)
         return h & 0x7fffffff
@@ -379,12 +389,17 @@ class JDWrapper(object):
             # check if QR code scanned
             qr_ticket = None
             retry_times = 100
+            qrsig = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'qrsig':
+                    qrsig = ck.value
+                    break
             while retry_times:
                 retry_times -= 1
                 resp = self.sess.get("https://ssl.ptlogin2.qq.com/ptqrlogin",
                     params = {
                         'u1': 'https://graph.qq.com/oauth/login_jump',
-                        'ptqrtoken': self.hash33(self.sess.cookies['qrsig']),
+                        'ptqrtoken': self.hash33(qrsig),
                         'ptredirect': 0,
                         'h': 1,
                         't': 1,
