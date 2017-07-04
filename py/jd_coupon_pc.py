@@ -72,9 +72,15 @@ class JDCoupon(JDWrapper):
             if (diff <= 0.5):
                 break;
 
-def click_task(jd, target, id):    
+def click_task(coupon_url, target, id):    
     cnt = 0
+    jd = JDCoupon()
+    cookies_file = "pc_cookies.dat"
     logging.warning(u'进程{}:开始运行'.format(id+1))
+    if not jd.load_cookie(cookies_file):
+        logging.warning(u'进程{}:无法加载cookie'.format(id+1))
+        return 0
+    jd.coupon_url = coupon_url
     while(wait_flag.value != 0):
         pass
     result = []
@@ -127,7 +133,7 @@ if __name__ == '__main__':
     wait_flag.value = 1
     run_flag.value = 1
     for i in range(options.process):
-        result.append(pool.apply_async(click_task, args=(jd, target, i,)))
+        result.append(pool.apply_async(click_task, args=(jd.coupon_url, target, i,)))
     jd.busy_wait(target)
     wait_flag.value = 0
     run_time = jd.duration
