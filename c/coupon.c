@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include "wrapper.h"
 
-int coupon_click(CURL *curl)
+int coupon_click(CURL *curl, int verbose)
 {
     struct MemoryStruct chunk;
     int ret = 0;
@@ -17,7 +17,9 @@ int coupon_click(CURL *curl)
     if (ret != 0) {
         goto ERROR_EXIT;
     }
-    print_string(chunk.memory, chunk.size);
+    if(verbose != 0) {
+        print_string(chunk.memory, chunk.size);
+    }
 ERROR_EXIT:
     if (NULL != chunk.memory) {
         free(chunk.memory);
@@ -76,7 +78,7 @@ int main(int argc, char* argv[])
             goto ERROR_EXIT;
         }
         set_local_time(curl);
-        coupon_click(curl);
+        coupon_click(curl, 1);
     } else {
         fprintf(stderr, "Curl init failed!\n");
         ret = 1;
