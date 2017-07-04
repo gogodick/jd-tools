@@ -117,9 +117,8 @@ class JDCoupon(JDWrapper):
 def click_task(coupon_data, target, id):    
     cnt = 0
     jd = JDCoupon()
-    cookies_file = "mobile_cookies.dat"
     logging.warning(u'进程{}:开始运行'.format(id+1))
-    if not jd.load_cookie(cookies_file):
+    if not jd.load_cookie(jd.mobile_cookie_file):
         logging.warning(u'进程{}:无法加载cookie'.format(id+1))
         return 0
     jd.coupon_data = coupon_data

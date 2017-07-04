@@ -31,7 +31,8 @@ class JDWrapper(object):
     '''
     This class used to simulate login JD
     '''
-    
+    mobile_cookie_file = "mobile_cookie.dat"
+    pc_cookie_file = "pc_cookie.dat"
     def __init__(self):
         self.sess = requests.Session()
 
@@ -266,14 +267,13 @@ class JDWrapper(object):
 
     def pc_login(self):
         self.sess.cookies.clear()
-        cookies_file = "pc_cookies.dat"
-        if self.load_cookie(cookies_file):
+        if self.load_cookie(self.pc_cookie_file):
             if self.pc_verify_login():
                 return True
         self.sess.cookies.clear()
         if not self.pc_login_by_QR():
             return False
-        self.save_cookie(cookies_file)
+        self.save_cookie(self.pc_cookie_file)
         return True
     
     def pc_verify_login(self):
@@ -452,14 +452,13 @@ class JDWrapper(object):
 
     def mobile_login(self):
 	self.sess.cookies.clear()
-        cookies_file = "mobile_cookies.dat"
-        if self.load_cookie(cookies_file):
+        if self.load_cookie(self.mobile_cookie_file):
             if self.mobile_verify_login():
                 return True
         self.sess.cookies.clear()
         if not self.mobile_login_by_QR():
             return False
-        self.save_cookie(cookies_file)
+        self.save_cookie(self.mobile_cookie_file)
         return True
 
 if __name__ == '__main__':
