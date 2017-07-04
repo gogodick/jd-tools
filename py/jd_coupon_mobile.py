@@ -26,14 +26,16 @@ class JDCoupon(JDWrapper):
     This class used to click JD coupon
     '''
     duration = 5
-    sid = ""
-    codeKey = ""
-    validateCode = ""
-    roleId = ""
-    key = ""
-    couponKey = ""
-    activeId = ""
-    couponType = ""
+    coupon_data = {
+        'sid': "", 
+        'codeKey': "", 
+        'validateCode': "", 
+        'roleId': "", 
+        'key': "", 
+        'couponKey': "", 
+        'activeId': "", 
+        'couponType': "", 
+    }
     def setup(self, key, role_id):
         try:
             data = {
@@ -46,28 +48,28 @@ class JDCoupon(JDWrapper):
             soup = bs4.BeautifulSoup(resp.text, "html.parser")
             tags = soup.select('input#sid')
             if len(tags) != 0:
-                self.sid = str(tags[0]['value'])
+                self.coupon_data['sid'] = str(tags[0]['value'])
             tags = soup.select('input#codeKey')
             if len(tags) != 0:
-                self.codeKey = str(tags[0]['value'])
+                self.coupon_data['codeKey'] = str(tags[0]['value'])
             tags = soup.select('input#validateCodeSign')
             if len(tags) != 0:
-                self.validateCode = str(tags[0]['value'])
+                self.coupon_data['validateCode'] = str(tags[0]['value'])
             tags = soup.select('input#roleId')
             if len(tags) != 0:
-                self.roleId = str(tags[0]['value'])
+                self.coupon_data['roleId'] = str(tags[0]['value'])
             tags = soup.select('input#key')
             if len(tags) != 0:
-                self.key = str(tags[0]['value'])
+                self.coupon_data['key'] = str(tags[0]['value'])
             tags = soup.select('input#couponKey')
             if len(tags) != 0:
-                self.couponKey = str(tags[0]['value'])
+                self.coupon_data['couponKey'] = str(tags[0]['value'])
             tags = soup.select('input#activeId')
             if len(tags) != 0:
-                self.activeId = str(tags[0]['value'])
+                self.coupon_data['activeId'] = str(tags[0]['value'])
             tags = soup.select('input#couponType')
             if len(tags) != 0:
-                self.couponType = str(tags[0]['value'])
+                self.coupon_data['couponType'] = str(tags[0]['value'])
             return True
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
@@ -76,17 +78,7 @@ class JDCoupon(JDWrapper):
     def click(self, level=None):
         try:
             url = 'http://coupon.m.jd.com/coupons/submit.json'
-            data = {
-                'sid': self.sid, 
-                'codeKey': self.codeKey, 
-                'validateCode': self.validateCode, 
-                'roleId': self.roleId, 
-                'key': self.key, 
-                'couponKey': self.couponKey, 
-                'activeId': self.activeId, 
-                'couponType': self.couponType, 
-            } 
-            resp = self.sess.post(url, data = data, timeout=5)
+            resp = self.sess.post(url, data = self.coupon_data, timeout=5)
             if not resp.ok:
                 return 0
             if level != None:
@@ -102,17 +94,7 @@ class JDCoupon(JDWrapper):
     def click_fast(self, count):
         try:
             url = 'http://coupon.m.jd.com/coupons/submit.json'
-            data = {
-                'sid': self.sid, 
-                'codeKey': self.codeKey, 
-                'validateCode': self.validateCode, 
-                'roleId': self.roleId, 
-                'key': self.key, 
-                'couponKey': self.couponKey, 
-                'activeId': self.activeId, 
-                'couponType': self.couponType, 
-            } 
-            return [self.sess.post(url, data = data, timeout=5) for i in range(count)]
+            return [self.sess.post(url, data = self.coupon_data, timeout=5) for i in range(count)]
         except Exception, e:
             return []
 
@@ -132,9 +114,15 @@ class JDCoupon(JDWrapper):
             if (diff <= 0.5):
                 break;
 
-def click_task(jd, target, id):    
+def click_task(coupon_data, target, id):    
     cnt = 0
+    jd = JDCoupon()
+    cookies_file = "mobile_cookies.dat"
     logging.warning(u'进程{}:开始运行'.format(id+1))
+    if not jd.load_cookie(cookies_file):
+        logging.warning(u'进程{}:无法加载cookie'.format(id+1))
+        return 0
+    jd.coupon_data = coupon_data
     while(wait_flag.value != 0):
         pass
     result = []
@@ -188,7 +176,7 @@ if __name__ == '__main__':
     wait_flag.value = 1
     run_flag.value = 1
     for i in range(options.process):
-        result.append(pool.apply_async(click_task, args=(jd, target, i,)))
+        result.append(pool.apply_async(click_task, args=(jd.coupon_data, target, i,)))
     jd.busy_wait(target)
     wait_flag.value = 0
     run_time = jd.duration
