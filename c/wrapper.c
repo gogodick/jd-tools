@@ -63,7 +63,7 @@ void print_string(char *input, int length)
     return;
 }
 
-int find_string(char *input, char *start, char *end, int *pos, int *length)
+int find_string_start(char *input, char *start, char *end, int *pos, int *length)
 {
     int i;
     int input_length = strlen(input);
@@ -97,6 +97,40 @@ int find_string(char *input, char *start, char *end, int *pos, int *length)
     return 0;
 }
 
+int find_string_end(char *input, char *start, char *end, int *pos, int *length)
+{
+    int i;
+    int input_length = strlen(input);
+    int start_length = strlen(start);
+    int end_length = strlen(end);
+    int end_pos = -1, start_pos = -1;
+ 
+    for (i = 0; i < input_length; i++) {
+        if (memcmp(&input[i], end, end_length) == 0) {
+            end_pos = i;
+            break;
+        }
+    }
+    if (end_pos == -1) {
+        fprintf(stderr, "Can't find end %s!\n", end);
+        return 1;
+    }
+    for (i = (end_pos - start_length); i > 0; i--) {
+        if (memcmp(&input[i], start, start_length) == 0) {
+            start_pos = i;
+            break;
+        }
+    }
+    if (start_pos == -1) {
+        fprintf(stderr, "Can't find start %s!\n", start);
+        return 1;
+    }
+    *pos = start_pos + start_length;
+    *length = end_pos - (start_pos + start_length);
+    print_string(&input[*pos], *length);
+    return 0;
+}
+
 int jd_setup(CURL *curl, char *filename)
 {
     int retcode = 0;
@@ -105,7 +139,7 @@ int jd_setup(CURL *curl, char *filename)
     chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
     chunk.size = 0;    /* no data at this point */ 
     curl_easy_setopt(curl, CURLOPT_URL, "http://home.m.jd.com/wallet/wallet.action");
-    //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
     /* send all data to this function  */ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     /* we pass our 'chunk' struct to the callback function */ 
@@ -132,7 +166,30 @@ int jd_get(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *referer)
     if (referer != NULL) {
         curl_easy_setopt(curl, CURLOPT_REFERER, referer);
     }
-    //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+    /* send all data to this function  */ 
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    /* we pass our 'chunk' struct to the callback function */ 
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)chunk_ptr);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+    curl_easy_perform(curl);
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
+    if (retcode != 200) {
+        fprintf(stderr, "Response code is %d!\n", retcode);
+        return -1;
+    }
+    return 0;
+}
+
+int jd_post(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
+{
+    int retcode = 0;
+
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    if (data != NULL) {
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+    }
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
     /* send all data to this function  */ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     /* we pass our 'chunk' struct to the callback function */ 
@@ -160,7 +217,7 @@ double get_network_time(CURL *curl)
     if (ret != 0) {
         goto ERROR_EXIT;
     }
-    ret = find_string(chunk.memory, "{\"serverTime\":", "}", &pos, &length);
+    ret = find_string_start(chunk.memory, "{\"serverTime\":", "}", &pos, &length);
     if (ret != 0) {
         goto ERROR_EXIT;
     }
@@ -204,5 +261,3 @@ double get_local_time()
     lt = tv.tv_sec + (double)tv.tv_usec/1000000.0;
     return lt + time_diff;
 }
-
-
