@@ -1,7 +1,7 @@
 #!/usr/bin/make
 
 all: 
-	gcc -o coupon coupon.c -lcurl
+	gcc -o coupon wrapper.c coupon.c -lcurl
 
 clean:
 	rm -f *.o coupon
