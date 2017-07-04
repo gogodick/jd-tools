@@ -37,10 +37,7 @@ int coupon_dig(CURL *curl, char *key, char *role_id)
 
     chunk.memory = malloc(1);
     chunk.size = 0;
-    strcat(payload, "key=");
-    strcat(payload, key);
-    strcat(payload, "&roleId=");
-    strcat(payload, role_id);
+    snprintf(payload, sizeof(payload), "key=%s&roleId=%s", key, role_id);
     ret = jd_post(curl, &chunk, "http://coupon.m.jd.com/coupons/show.action", payload);
     if (ret != 0) {
         goto ERROR_EXIT;
