@@ -25,6 +25,12 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
     return realsize;
 }
 
+static size_t DummyCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    size_t realsize = size * nmemb;
+    return realsize;
+}
+
 void print_cookies(CURL *curl) 
 {
     CURLcode res;
@@ -191,6 +197,29 @@ int jd_post(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
     /* send all data to this function  */ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    /* we pass our 'chunk' struct to the callback function */ 
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)chunk_ptr);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+    curl_easy_perform(curl);
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
+    if (retcode != 200) {
+        fprintf(stderr, "Response code is %d!\n", retcode);
+        return -1;
+    }
+    return 0;
+}
+
+int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
+{
+    int retcode = 0;
+
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    if (data != NULL) {
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+    }
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+    /* send all data to this function  */ 
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, DummyCallback);
     /* we pass our 'chunk' struct to the callback function */ 
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)chunk_ptr);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);

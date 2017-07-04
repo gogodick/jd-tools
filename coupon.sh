@@ -21,4 +21,4 @@ fi
 if [ -e $FILE ]; then
     rm $FILE
 fi
-$TARGET "mobile_cookie.dat" $KEY $ROLEID
+$TARGET "mobile_cookie.dat" $KEY $ROLEID $HOUR $MINUTE $PROCESS

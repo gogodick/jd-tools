@@ -9,7 +9,7 @@
 #define COUPON_PAYLOAD_SIZE 1024
 char coupon_payload[COUPON_PAYLOAD_SIZE] = {0};
 
-int coupon_click(CURL *curl, int verbose)
+int coupon_click(CURL *curl)
 {
     struct MemoryStruct chunk;
     int ret = 0;
@@ -20,15 +20,18 @@ int coupon_click(CURL *curl, int verbose)
     if (ret != 0) {
         goto ERROR_EXIT;
     }
-    if(verbose != 0) {
-        print_string(chunk.memory, chunk.size);
-    }
+    print_string(chunk.memory, chunk.size);
 ERROR_EXIT:
     if (NULL != chunk.memory) {
         free(chunk.memory);
         chunk.memory = NULL;
     }
     return ret;
+}
+
+int coupon_click_fast(CURL *curl)
+{
+    return jd_post_fast(curl, NULL, "http://coupon.m.jd.com/coupons/submit.json", coupon_payload);
 }
 
 int coupon_dig(CURL *curl, char *key, char *role_id)
@@ -91,12 +94,17 @@ ERROR_EXIT:
 int main(int argc, char* argv[]) 
 {
     CURL *curl;
+    int hour = 0, minute = 0, process = 0;
     int ret = 0;
 
-    if (argc < 4) {
-        printf("Please specify cookie file, key and role_id\n");
+    if (argc < 7) {
+        printf("Please specify cookie file, key, role_id, hour, minute and process\n");
         exit(1);
     }
+    hour = atoi(argv[4]);
+    minute = atoi(argv[5]);
+    process = atoi(argv[6]);
+    printf("main: %d, %d, %d\n", hour, minute, process);
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     if (curl) {
@@ -111,7 +119,10 @@ int main(int argc, char* argv[])
             goto ERROR_EXIT;
         }
         set_local_time(curl);
-        coupon_click(curl, 1);
+        coupon_click_fast(curl);
+        coupon_click_fast(curl);
+        coupon_click_fast(curl);
+        coupon_click(curl);
     } else {
         fprintf(stderr, "Curl init failed!\n");
         ret = 1;
