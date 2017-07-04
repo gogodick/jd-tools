@@ -92,7 +92,6 @@ int find_string_start(char *input, char *start, char *end, int *pos, int *length
         fprintf(stderr, "Can't find end %s!\n", end);
         return 1;
     }
-    //print_string(input, input_length);
     //print_string(&input[*pos], *length);
     return 0;
 }
@@ -127,7 +126,7 @@ int find_string_end(char *input, char *start, char *end, int *pos, int *length)
     }
     *pos = start_pos + start_length;
     *length = end_pos - (start_pos + start_length);
-    print_string(&input[*pos], *length);
+    //print_string(&input[*pos], *length);
     return 0;
 }
 
