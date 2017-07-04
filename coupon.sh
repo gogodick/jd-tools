@@ -6,7 +6,7 @@ PROCESS=32
 COOKIEFILE="mobile_cookie.dat"
 FILE="coupon.log"
 TARGET="c/coupon"
-ROOT=`PWD`
+ROOT=`pwd`
 cd c
 make clean && make
 cd $ROOT
