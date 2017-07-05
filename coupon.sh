@@ -11,11 +11,6 @@ cd c
 make clean && make
 cd $ROOT
 if [ ! -e $TARGET ]; then
-    cd c
-    make
-    cd $ROOT
-fi
-if [ ! -e $TARGET ]; then
     return
 fi
 if [ -e $FILE ]; then
