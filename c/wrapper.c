@@ -172,6 +172,8 @@ int jd_get(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *referer)
         curl_easy_setopt(curl, CURLOPT_REFERER, referer);
     }
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
     /* send all data to this function  */ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     /* we pass our 'chunk' struct to the callback function */ 
@@ -195,6 +197,8 @@ int jd_post(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
     }
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
     /* send all data to this function  */ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     /* we pass our 'chunk' struct to the callback function */ 
@@ -219,6 +223,8 @@ int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *da
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
     }
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
     /* send all data to this function  */ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, DummyCallback);
     /* we pass our 'chunk' struct to the callback function */ 
