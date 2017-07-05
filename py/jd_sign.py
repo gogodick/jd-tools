@@ -209,11 +209,39 @@ class JDSign(JDWrapper):
 
     def mobile_sign_redpacket(self):
         sign_url = 'https://ms.jr.jd.com/gw/generic/activity/h5/m/receiveZhiBoXjkRedPacket'
-        logging.info(u'签到京东红包')
+        logging.info(u'签到京东直播红包')
         try:
             # 参见 red_packet_index.js
             payload = {
                 'reqData': '{"activityCode":"zhibo_xjk"}',
+            }
+            response = self.sess.post(sign_url, data=payload).json()
+            if response['resultCode'] == 0:
+                sign_success = response['resultData']['success']
+                if sign_success:
+                    logging.info('领取成功, 获得 {} 元.'.format(response['resultData']['data']))
+                else:
+                    message = response['resultData'].get('msg') or response.get('resultMsg')
+                    logging.info('领取结果: {}'.format(message))
+                    if response['resultData'].get('code') == '03':
+                        # 当 code 为 03 时, 表示今天已领过了, 因为领取前无法知道是否领过, 此处也当做任务成功返回
+                        sign_success = True
+                return sign_success
+            else:
+                message = response.get('resultMsg')
+                logging.error('领取失败: {}'.format(message))
+                return False
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_618_redpacket(self):
+        sign_url = 'https://ms.jr.jd.com/gw/generic/activity/h5/m/receiveZhiBoXjkRedPacket'
+        logging.info(u'签到京东618红包')
+        try:
+            # 参见 red_packet_index.js
+            payload = {
+                'reqData': '{"activityCode":"ying_yong_bao_618"}',
             }
             response = self.sess.post(sign_url, data=payload).json()
             if response['resultCode'] == 0:
