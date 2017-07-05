@@ -289,3 +289,37 @@ double get_local_time()
     lt = tv.tv_sec + (double)tv.tv_usec/1000000.0;
     return lt + time_diff;
 }
+
+void format_local_time(int *hourp, int *minutep, int *secondp)
+{
+    double lt = get_local_time();
+    time_t tt = lt;
+    struct tm *p = localtime(&tt);
+    if (NULL != hourp) {
+        *hourp = p->tm_hour;
+    }
+    if (NULL != minutep) {
+        *minutep = p->tm_min;
+    }
+    if (NULL != secondp) {
+        *secondp = p->tm_sec;
+    }
+    return;
+}
+
+double compare_local_time(double target)
+{
+    double lt = get_local_time();
+    time_t tt = lt;
+    double frac = lt - tt;
+    double one_day = 86400.0; // 24 * 60 *60
+    double current = 0.0;
+    struct tm *p = localtime(&tt);
+
+    current = p->tm_hour * 3600 + p->tm_min * 60 + p->tm_sec + frac;
+    if (target < current) {
+        target += one_day;
+    }
+    //return target - current;
+    return 0.0;
+}
