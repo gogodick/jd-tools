@@ -209,8 +209,9 @@ int jd_post(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
     return 0;
 }
 
-int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
+int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data, int num)
 {
+    int i =0, cnt = 0;
     int retcode = 0;
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -223,13 +224,17 @@ int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *da
     /* we pass our 'chunk' struct to the callback function */ 
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)chunk_ptr);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-    curl_easy_perform(curl);
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
-    if (retcode != 200) {
-        fprintf(stderr, "Response code is %d!\n", retcode);
-        return -1;
+    for (i = 0; i < num; i++) {
+        curl_easy_perform(curl);
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
+        if (retcode != 200) {
+            fprintf(stderr, "Response code is %d!\n", retcode);
+        }
+        else {
+            cnt++;
+        }
     }
-    return 0;
+    return cnt;
 }
 
 double get_network_time(CURL *curl)
@@ -320,6 +325,5 @@ double compare_local_time(double target)
     if (target < current) {
         target += one_day;
     }
-    //return target - current;
-    return 0.0;
+    return target - current;
 }
