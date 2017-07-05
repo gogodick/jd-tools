@@ -16,4 +16,5 @@ int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *da
 double get_network_time(CURL *curl);
 void set_local_time(CURL *curl);
 double get_local_time();
-
+void format_local_time(int *hourp, int *minutep, int *secondp);
+double compare_local_time(double target);
