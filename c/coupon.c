@@ -58,9 +58,18 @@ ERROR_EXIT:
     return ret;
 }
 
-int coupon_click_fast(CURL *curl, int num)
+int coupon_click_fast(CURL *curl)
 {
-    return jd_post_fast(curl, NULL, coupon_url, coupon_payload, num);
+    int cnt = 0;
+    cnt += !jd_post_fast(curl, NULL, coupon_url, coupon_payload);
+    cnt += !jd_post_fast(curl, NULL, coupon_url, coupon_payload);
+    cnt += !jd_post_fast(curl, NULL, coupon_url, coupon_payload);
+    cnt += !jd_post_fast(curl, NULL, coupon_url, coupon_payload);
+    cnt += !jd_post_fast(curl, NULL, coupon_url, coupon_payload);
+    cnt += !jd_post_fast(curl, NULL, coupon_url, coupon_payload);
+    cnt += !jd_post_fast(curl, NULL, coupon_url, coupon_payload);
+    cnt += !jd_post_fast(curl, NULL, coupon_url, coupon_payload);
+    return cnt;
 }
 
 int coupon_dig(CURL *curl, char *key, char *role_id)
@@ -155,13 +164,12 @@ void *coupon_click_task(void *arg)
     struct task_params *params = arg;
 
     printf("Task %d start...\n", params->id+1);
-    curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     set_share_handle(curl);
     curl_easy_setopt(curl, CURLOPT_COOKIEFILE, params->file);
     while(wait_flag != 0);
     while(run_flag != 0) {
-        cnt += coupon_click_fast(curl, 8);
+        cnt += coupon_click_fast(curl);
     }
     coupon_click(curl);
     curl_easy_cleanup(curl);

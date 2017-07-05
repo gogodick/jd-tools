@@ -172,6 +172,8 @@ int jd_get(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *referer)
         curl_easy_setopt(curl, CURLOPT_REFERER, referer);
     }
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
     /* send all data to this function  */ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     /* we pass our 'chunk' struct to the callback function */ 
@@ -195,6 +197,8 @@ int jd_post(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
     }
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
     /* send all data to this function  */ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     /* we pass our 'chunk' struct to the callback function */ 
@@ -209,9 +213,9 @@ int jd_post(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
     return 0;
 }
 
-int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data, int num)
+int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
 {
-    int i =0, cnt = 0;
+    int i =0;
     int retcode = 0;
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -219,22 +223,20 @@ int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *da
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
     }
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
     /* send all data to this function  */ 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, DummyCallback);
     /* we pass our 'chunk' struct to the callback function */ 
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)chunk_ptr);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-    for (i = 0; i < num; i++) {
-        curl_easy_perform(curl);
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
-        if (retcode != 200) {
-            fprintf(stderr, "Response code is %d!\n", retcode);
-        }
-        else {
-            cnt++;
-        }
+    curl_easy_perform(curl);
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
+    if (retcode != 200) {
+        fprintf(stderr, "Response code is %d!\n", retcode);
+        return -1;
     }
-    return cnt;
+    return 0;
 }
 
 double get_network_time(CURL *curl)
