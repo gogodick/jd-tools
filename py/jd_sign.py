@@ -207,6 +207,7 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    '''
     def mobile_sign_redpacket(self):
         sign_url = 'https://ms.jr.jd.com/gw/generic/activity/h5/m/receiveZhiBoXjkRedPacket'
         logging.info(u'签到京东直播红包')
@@ -234,6 +235,7 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
+    '''
 
     def mobile_sign_618_redpacket(self):
         sign_url = 'https://ms.jr.jd.com/gw/generic/activity/h5/m/receiveZhiBoXjkRedPacket'
