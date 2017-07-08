@@ -156,7 +156,7 @@ int jd_setup(CURL *curl, char *filename)
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
     free(chunk.memory);
     if (retcode != 200) {
-        fprintf(stderr, "Response code is %d!\n", retcode);
+        fprintf(stderr, "Response code is %ld!\n", retcode);
         return -1;
     }
     printf("%lu bytes retrieved\n", (long)chunk.size);
@@ -182,7 +182,7 @@ int jd_get(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *referer)
     curl_easy_perform(curl);
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
     if (retcode != 200) {
-        fprintf(stderr, "Response code is %d!\n", retcode);
+        fprintf(stderr, "Response code is %ld!\n", retcode);
         return -1;
     }
     return 0;
@@ -207,7 +207,7 @@ int jd_post(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
     curl_easy_perform(curl);
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
     if (retcode != 200) {
-        fprintf(stderr, "Response code is %d!\n", retcode);
+        fprintf(stderr, "Response code is %ld!\n", retcode);
         return -1;
     }
     return 0;
@@ -232,7 +232,7 @@ int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *da
     curl_easy_perform(curl);
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE , &retcode);
     if (retcode != 200) {
-        fprintf(stderr, "Response code is %d!\n", retcode);
+        fprintf(stderr, "Response code is %ld!\n", retcode);
         return -1;
     }
     return 0;
