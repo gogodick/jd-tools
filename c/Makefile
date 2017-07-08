@@ -1,7 +1,7 @@
 #!/usr/bin/make
 
 all: 
-	gcc -o coupon wrapper.c coupon.c -lcurl -lpthread
+	gcc wrapper.c coupon.c -O2 -lcurl -lpthread -o coupon
 
 clean:
 	rm -f *.o coupon

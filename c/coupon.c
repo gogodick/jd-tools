@@ -167,7 +167,9 @@ void *coupon_click_task(void *arg)
     curl = curl_easy_init();
     set_share_handle(curl);
     curl_easy_setopt(curl, CURLOPT_COOKIEFILE, params->file);
-    while(wait_flag != 0);
+    while(wait_flag != 0){
+        sched_yield();
+    }
     while(run_flag != 0) {
         cnt += coupon_click_fast(curl);
     }

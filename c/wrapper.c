@@ -138,7 +138,7 @@ int find_string_end(char *input, char *start, char *end, int *pos, int *length)
 
 int jd_setup(CURL *curl, char *filename)
 {
-    int retcode = 0;
+    long retcode = 0;
     struct MemoryStruct chunk;
 
     chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
@@ -165,7 +165,7 @@ int jd_setup(CURL *curl, char *filename)
 
 int jd_get(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *referer)
 {
-    int retcode = 0;
+    long retcode = 0;
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
     if (referer != NULL) {
@@ -190,7 +190,7 @@ int jd_get(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *referer)
 
 int jd_post(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
 {
-    int retcode = 0;
+    long retcode = 0;
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
     if (data != NULL) {
@@ -215,8 +215,7 @@ int jd_post(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
 
 int jd_post_fast(CURL *curl, struct MemoryStruct *chunk_ptr, char *url, char *data)
 {
-    int i =0;
-    int retcode = 0;
+    long retcode = 0;
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
     if (data != NULL) {
