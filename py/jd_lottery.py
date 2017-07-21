@@ -108,7 +108,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--code', 
                         help='Lottery code', default=None)
     parser.add_argument('-hh', '--hour', 
-                        type=int, help='Target hour', default=10)
+                        type=int, help='Target hour', default=None)
     parser.add_argument('-m', '--minute', 
                         type=int, help='Target minute', default=0)
     parser.add_argument('-l', '--log', 
@@ -128,11 +128,15 @@ if __name__ == '__main__':
     elif options.code != None:
         if not jd.pc_login():
             sys.exit(1)
-        target = (options.hour * 3600) + (options.minute * 60)
-        jd.relax_wait(options.code, target, 5)
-        jd.busy_wait(target)
-        for i in range(3):
-            jd.click_lottery(options.code, None)
-        logging.info(jd.get_local_time())
+        if options.hour != None:
+            target = (options.hour * 3600) + (options.minute * 60)
+            jd.relax_wait(options.code, target, 5)
+            jd.busy_wait(target)
+            for i in range(3):
+                jd.click_lottery(options.code, None)
+            logging.info(jd.get_local_time())
+        else:
+            for i in range(3):
+                jd.click_lottery(options.code, logging.INFO)
     else:
         logging.error(u'命令参数错误！！！')
