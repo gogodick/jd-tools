@@ -188,7 +188,7 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
-
+    '''
     def mobile_sign_fbank(self):
         sign_url = 'https://fbank.m.jd.com/api.json?functionId=fBankSign'
         logging.info(u'签到京东流量加油站')
@@ -206,7 +206,7 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
-
+    '''
     '''
     def mobile_sign_redpacket(self):
         sign_url = 'https://ms.jr.jd.com/gw/generic/activity/h5/m/receiveZhiBoXjkRedPacket'
