@@ -3,7 +3,7 @@ ROLEID="7289727"
 HOUR=12
 MINUTE=00
 PROCESS=32
-COOKIEFILE="mobile_cookie.dat"
+COOKIEFILE="cookies/mobile_cookie.dat"
 FILE="coupon.log"
 TARGET="c/coupon"
 ROOT=`pwd`
@@ -16,4 +16,4 @@ fi
 if [ -e $FILE ]; then
     rm $FILE
 fi
-$TARGET "mobile_cookie.dat" $KEY $ROLEID $HOUR $MINUTE $PROCESS
+$TARGET $COOKIEFILE $KEY $ROLEID $HOUR $MINUTE $PROCESS
