@@ -156,6 +156,11 @@ class JDWrapper(object):
                 if res != None:
                     handle = int(res.group('pid'))
                     break;
+                pattern = re.compile(r'rundll32.exe(?P<pid>.*)Console')
+                res = pattern.search(task_list)
+                if res != None:
+                    handle = int(res.group('pid'))
+                    break;
                 time.sleep(0.1)
         else:
             logging.error("Does not support this platform: "+system_text)
@@ -163,6 +168,9 @@ class JDWrapper(object):
         return handle
 
     def close_image(self, handle):
+        if handle == None:
+            logging.error("Can not close image on this platform: "+system_text)
+            return
         system_text = platform.system()
         if 'Linux' in system_text:
             handle.terminate()
