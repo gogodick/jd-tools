@@ -148,20 +148,7 @@ class JDWrapper(object):
         if 'Linux' in system_text:
             handle = subprocess.Popen(['eog', filename])
         elif 'CYGWIN' in system_text:
-            os.system('explorer ' + filename)
-            for i in range(10):
-                task_list = os.popen("tasklist").read()
-                pattern = re.compile(r'dllhost.exe(?P<pid>.*)Console')
-                res = pattern.search(task_list)
-                if res != None:
-                    handle = int(res.group('pid'))
-                    break;
-                pattern = re.compile(r'rundll32.exe(?P<pid>.*)Console')
-                res = pattern.search(task_list)
-                if res != None:
-                    handle = int(res.group('pid'))
-                    break;
-                time.sleep(0.1)
+            handle = subprocess.Popen(['mspaint', filename])
         else:
             logging.error("Does not support this platform: "+system_text)
             sys.exit(1)
@@ -175,7 +162,7 @@ class JDWrapper(object):
         if 'Linux' in system_text:
             handle.terminate()
         elif 'CYGWIN' in system_text:
-            os.system("taskkill /PID " + str(handle))
+            handle.terminate()
         else:
             logging.error("Does not support this platform: "+system_text)
             sys.exit(1)
