@@ -32,6 +32,7 @@ class JDWrapper(object):
     '''
     This class used to simulate login JD
     '''
+    cookie_dir = "cookies"
     mobile_cookie_file = "mobile_cookie.dat"
     pc_cookie_file = "pc_cookie.dat"
     def __init__(self):
@@ -120,7 +121,9 @@ class JDWrapper(object):
             for ck in self.sess.cookies:
                 if ck.expires == None:
                     ck.expires = int(time.time()) + 3600 * 24
-            self.sess.cookies.save(filename, ignore_discard=True)
+            if not os.path.exists(self.cookie_dir):
+                os.mkdir(self.cookie_dir)
+            self.sess.cookies.save(self.cookie_dir+'/'+filename, ignore_discard=True)
             return True
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
@@ -130,7 +133,7 @@ class JDWrapper(object):
         try:
             load_cookiejar = cookielib.MozillaCookieJar()
             try:
-                load_cookiejar.load(filename, ignore_discard=True)
+                load_cookiejar.load(self.cookie_dir+'/'+filename, ignore_discard=True)
             except:
                 pass
             self.sess.cookies = load_cookiejar
