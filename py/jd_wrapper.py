@@ -143,7 +143,7 @@ class JDWrapper(object):
         system_text = platform.system()
         handle = None
         if 'Linux' in system_text:
-            handle = subprocess.Popen('eog ' + filename)
+            handle = subprocess.Popen(['eog', filename])
         elif 'CYGWIN' in system_text:
             os.system('explorer ' + filename)
             for i in range(10):
