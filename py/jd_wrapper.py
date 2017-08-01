@@ -19,6 +19,7 @@ import math
 import json
 import random
 import logging, logging.handlers
+import subprocess
 import platform
 import sys
 reload(sys)
@@ -138,6 +139,36 @@ class JDWrapper(object):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def open_image(self, filename):
+        system_text = platform.system()
+        handle = None
+        if 'Linux' in system_text:
+            handle = subprocess.Popen('eog ' + filename)
+        elif 'CYGWIN' in system_text:
+            os.system('explorer ' + filename)
+            for i in range(10):
+                task_list = os.popen("tasklist").read()
+                pattern = re.compile(r'dllhost.exe(?P<pid>.*)Console')
+                res = pattern.search(task_list)
+                if res != None:
+                    handle = int(res.group('pid'))
+                    break;
+                time.sleep(0.1)
+        else:
+            logging.error("Does not support this platform: "+system_text)
+            sys.exit(1)
+        return handle
+
+    def close_image(self, handle):
+        system_text = platform.system()
+        if 'Linux' in system_text:
+            handle.terminate()
+        elif 'CYGWIN' in system_text:
+            os.system("taskkill /PID " + str(handle))
+        else:
+            logging.error("Does not support this platform: "+system_text)
+            sys.exit(1)
+
     def pc_login_by_QR(self):
         # jd login by QR code
         try:
@@ -191,10 +222,7 @@ class JDWrapper(object):
                     f.write(chunk)
             
             ## scan QR code with phone
-            if 'Linux' in platform.system():
-                os.system('eog ' + image_file + '&')
-            else:
-                os.system('explorer ' + image_file)
+            image_handle = self.open_image(image_file)
 
             # step 3： check scan result
             ## mush have
@@ -233,6 +261,7 @@ class JDWrapper(object):
                     logging.warning(u'{} : {}'.format(rs['code'], rs['msg']))
                     time.sleep(3)
             
+            self.close_image(image_handle)
             if not qr_ticket:
                 logging.warning(u'二维码登陆失败')
                 return False
@@ -380,10 +409,7 @@ class JDWrapper(object):
                 for chunk in resp.iter_content(chunk_size=1024):
                     f.write(chunk)
             ## scan QR code with phone
-            if 'Linux' in platform.system():
-                os.system('eog ' + image_file + '&')
-            else:
-                os.system('explorer ' + image_file)
+            image_handle = self.open_image(image_file)
              
             pattern = re.compile(r'\(\'(?P<status>\d+)\',\'.*\',\'.*\',\'(?P<info>.*)\',')
             # check if QR code scanned
@@ -430,6 +456,8 @@ class JDWrapper(object):
                 elif res.group('status') == '65':
                     break;
                 time.sleep(3)
+
+            self.close_image(image_handle)
             data = {
                 'response_type': 'code',
                 'client_id': client_id,
