@@ -140,15 +140,16 @@ class JDSign(JDWrapper):
             return False
 
     def mobile_sign_bean(self):
-        sign_url = 'https://ld.m.jd.com/SignAndGetBeansN/signStart.action'
+        sign_url = 'http://api.m.jd.com/client.action?functionId=signBeanStart&client=ld&clientVersion=1.0.0'
         logging.info(u'签到京东客户端')
         try:
             resp = self.sess.get(sign_url)
             sign_success = False
             if resp.ok:
                 as_json = resp.json()
-                sign_success = (as_json['status'] == 1)
-                message = as_json['signText']
+                print as_json
+                sign_success = (as_json['data']['status'] == 1)
+                message = as_json['data']['signShowBean']['signText']
                 logging.info('签到成功: {}; Message: {}'.format(sign_success, message))
                 poker = as_json['poker']
                 # "complated": 原文如此, 服务端的拼写错误...
