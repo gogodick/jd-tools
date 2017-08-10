@@ -124,15 +124,20 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def pick_poker(self, poker):
+    def pick_poker(self):
         try:
-            poker_url = 'https://ld.m.jd.com/card/getCardResult.action'
-            poker_to_pick = random.randint(1, len(poker['awardList']))
-            resp = self.sess.get(poker_url, params={'index': poker_to_pick})
+            poker_url = 'http://api.m.jd.com/client.action?functionId=getCardResult&client=ld&clientVersion=1.0.0&body={"index":'
+            poker_to_pick = random.randint(1, 6)
+            poker_url += str(poker_to_pick)
+            poker_url += '}'
+            headers = {'Referer': "http://bean.m.jd.com/"}
+            resp = self.sess.get(poker_url)
             pick_success = False
             as_json = resp.json()
-            pick_success = (as_json['drawStatus'] == 0)
-            message = as_json.get('signText') or as_json['drawText']
+            pick_success = not as_json['code']
+            message = as_json['data']['signShowBean']['signText']
+            award = as_json['data']['signShowBean']['signAward']
+            message = message.replace(u'signAward', award)
             logging.info('翻牌成功: {}; Message: {}'.format(pick_success, message))
             return pick_success
         except Exception as e:
@@ -147,15 +152,15 @@ class JDSign(JDWrapper):
             sign_success = False
             if resp.ok:
                 as_json = resp.json()
-                print as_json
                 sign_success = (as_json['data']['status'] == 1)
                 message = as_json['data']['signShowBean']['signText']
+                award = as_json['data']['signShowBean']['signAward']
+                message = message.replace(u'signAward', award)
                 logging.info('签到成功: {}; Message: {}'.format(sign_success, message))
-                poker = as_json['poker']
                 # "complated": 原文如此, 服务端的拼写错误...
-                poker_picked = poker['complated']
+                poker_picked = as_json['data']['signShowBean']['complated']
                 if not poker_picked:
-                    self.pick_poker(poker)
+                    self.pick_poker()
             else:
                 logging.error('签到失败: Status code: {}; Reason: {}'.format(resp.status_code, resp.reason))
             return sign_success
