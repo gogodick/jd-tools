@@ -135,10 +135,11 @@ class JDSign(JDWrapper):
             pick_success = False
             as_json = resp.json()
             pick_success = not as_json['code']
-            message = as_json['data']['signShowBean']['signText']
-            award = as_json['data']['signShowBean']['signAward']
-            message = message.replace(u'signAward', award)
-            logging.info('翻牌成功: {}; Message: {}'.format(pick_success, message))
+            if 'data' in as_json:
+                message = as_json['data']['signText']
+                award = as_json['data']['signAward']
+                message = message.replace(u'signAward', award)
+                logging.info('翻牌成功: {}; Message: {}'.format(pick_success, message))
             return pick_success
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
