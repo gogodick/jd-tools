@@ -195,6 +195,31 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
+
+    def mobile_sign_j8(self):
+        sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/appdownload/lottery.action'
+        logging.info(u'签到8月每天领京豆')
+        try:
+            sid = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'sid':
+                    sid = ck.value
+                    break
+            data = {
+                'sid': sid,
+            }
+            response = self.sess.get(sign_url, params=data)
+            if response.status_code == requests.codes.OK:
+                as_json = response.json()
+                if as_json['status'] == 0:
+                    logging.info('获得京豆: {}; Message: {}'.format(as_json['count'], as_json['resultMsg']))
+                else:
+                    logging.info('今日已经领取过; Message: {}'.format(as_json['resultMsg']))
+            else:
+                logging.error('签到失败: Status code: {}; Reason: {}'.format(response.status_code, response.reason))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
     '''
     def mobile_sign_fbank(self):
         sign_url = 'https://fbank.m.jd.com/api.json?functionId=fBankSign'
@@ -248,9 +273,9 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
     jd = JDSign()
+    func_list = dir(jd)
     if not jd.pc_login():
         sys.exit(1)
-    func_list = dir(jd)
     for func in func_list:
         if func.find('pc_sign') == 0:
             jd.__getattribute__(func)()
