@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
     if (process > MAX_TASK) {
         process = MAX_TASK;
     }
-    target = hour*3600+minute;
+    target = hour*3600+minute*60;
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     set_share_handle(curl);
