@@ -196,6 +196,31 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_j9(self):
+        sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/appdownload/lottery.action'
+        logging.info(u'签到9月每天领京豆')
+        try:
+            sid = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'sid':
+                    sid = ck.value
+                    break
+            data = {
+                'sid': sid,
+            }
+            response = self.sess.get(sign_url, params=data)
+            if response.status_code == requests.codes.OK:
+                as_json = response.json()
+                if 'status' in as_json and as_json['status'] == 0:
+                    logging.info('获得京豆: {}; Message: {}'.format(as_json['count'], as_json['resultMsg']))
+                else:
+                    logging.info('今日已经领取过; Message: {}'.format(as_json['resultMsg']))
+            else:
+                logging.error('签到失败: Status code: {}; Reason: {}'.format(response.status_code, response.reason))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
     '''
     def mobile_sign_fbank(self):
         sign_url = 'https://fbank.m.jd.com/api.json?functionId=fBankSign'
