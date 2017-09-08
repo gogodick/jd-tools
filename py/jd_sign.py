@@ -221,33 +221,13 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    '''
-    def mobile_sign_fbank(self):
-        sign_url = 'https://fbank.m.jd.com/api.json?functionId=fBankSign'
-        logging.info(u'签到京东流量加油站')
-        try:
-            response = self.sess.get(sign_url).json()
-            if response['success']:
-                sign_success = ('errorCode' not in response)
-                message = response.get('errorMessage') or response.get('message')
-                logging.info('签到成功: {}; Message: {}.'.format(sign_success, message))
-                return sign_success
-            else:
-                message = response.get('message') or response.get('errorMessage')
-                logging.error('签到失败: {}'.format(message))
-                return False
-        except Exception as e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-    '''
-    '''
     def mobile_sign_redpacket(self):
         sign_url = 'https://ms.jr.jd.com/gw/generic/activity/h5/m/receiveZhiBoXjkRedPacket'
         logging.info(u'签到京东直播红包')
         try:
             # 参见 red_packet_index.js
             payload = {
-                'reqData': '{"activityCode":"zhibo_xjk"}',
+                'reqData': '{"activityCode":"ying_yong_bao_618"}',
             }
             response = self.sess.post(sign_url, data=payload).json()
             if response['resultCode'] == 0:
@@ -268,7 +248,6 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
-    '''
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
