@@ -31,8 +31,8 @@ class JDCoupon(JDWrapper):
             "http://coupon.jd.com/ilink/couponSendFront/send_index.action",
             "http://coupon.jd.com/ilink/couponActiveFront/front_index.action",
         )
-        time.sleep(1)
         for url in base_urls:
+            time.sleep(1)
             test_url = url+"?key="+key+"&roleId="+role_id+"&to=www.jd.com"
             resp = self.sess.get(test_url, timeout=5)
             soup = bs4.BeautifulSoup(resp.text, "html.parser")
