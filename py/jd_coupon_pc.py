@@ -26,9 +26,24 @@ class JDCoupon(JDWrapper):
     This class used to click JD coupon
     '''
     duration = 5
-    coupon_url = ""
     def setup(self, key, role_id):
-        self.coupon_url = "http://coupon.jd.com/ilink/couponSendFront/send_index.action?key="+key+"&roleId="+role_id+"&to=www.jd.com"
+        base_urls = (
+            "http://coupon.jd.com/ilink/couponSendFront/send_index.action",
+            "http://coupon.jd.com/ilink/couponActiveFront/front_index.action",
+        )
+        time.sleep(1)
+        for url in base_urls:
+            test_url = url+"?key="+key+"&roleId="+role_id+"&to=www.jd.com"
+            resp = self.sess.get(test_url, timeout=5)
+            soup = bs4.BeautifulSoup(resp.text, "html.parser")
+            tag1 = soup.select('title')
+            tag2 = soup.select('div.content')
+            if len(tag2):
+                message = tag2[0].text.strip(' \t\r\n')
+                if message.find(u'活动链接过期') == -1:
+                    self.coupon_url = test_url
+                    return True
+        return False
     def click(self, level=None):
         try:
             resp = self.sess.get(self.coupon_url, timeout=5)
@@ -118,7 +133,8 @@ if __name__ == '__main__':
     jd = JDCoupon()
     if not jd.pc_login():
         sys.exit(1)
-    jd.setup(options.key, options.role_id)
+    if not jd.setup(options.key, options.role_id):
+        sys.exit(1)
     jd.click(logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)
     jd.relax_wait(target, 5)
