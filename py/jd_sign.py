@@ -56,25 +56,16 @@ class JDSign(JDWrapper):
             return False
 
     def pc_sign_finance(self):
-        index_url = 'https://vip.jr.jd.com'
-        sign_url = 'https://vip.jr.jd.com/newSign/doSign'
+        index_url = 'https://jr.jd.com'
+        sign_url = 'https://jrai.jd.com/index/vip-user/sign'
 
         logging.info(u'签到京东金融')
         try:
             headers = {'Referer': index_url}
-            response = self.sess.post(sign_url, headers=headers).json()
-            message = response['message']
+            response = self.sess.get(sign_url, headers=headers)
+            as_json = response.json()
+            print as_json
             sign_success = False
-            if response['success']:
-                sign_result = response['sign']
-                sign_success = sign_result['result']
-                if sign_success:
-                    count = sign_result['num']
-                    logging.info(u'签到成功, 获得 {} 个京豆.'.format(count))
-                else:
-                    logging.error(u'签到失败: {}'.format(message))
-            else:
-                logging.error(u'签到失败: {}'.format(message))
             return sign_success
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
