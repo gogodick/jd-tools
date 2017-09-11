@@ -64,9 +64,18 @@ class JDSign(JDWrapper):
             headers = {'Referer': index_url}
             response = self.sess.get(sign_url, headers=headers)
             as_json = response.json()
+            if 'data' in as_json:
+                if 'signData' in as_json['data']:
+                    if 'isSuccess' in as_json['data']['signData']:
+                        num = as_json['data']['signData']['thisAmount']
+                        logging.info(u'签到成功, 获得 {} 个京豆.'.format(num))
+                        return True
+                    else:
+                        num = as_json['data']['signData']['accountBalance']
+                        logging.error(u'今日已签到: 账户有{}个钢蹦'.format(num))
+                        return False
             print as_json
-            sign_success = False
-            return sign_success
+            return False
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
