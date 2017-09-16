@@ -31,7 +31,7 @@ class JDSign(JDWrapper):
         logging.info(u'签到京东会员')
         try:
             html = self.sess.get(index_url).text
-            pattern = re.compile(r'pageConfig.token="(?P<token>\d+)"')
+            pattern = re.compile(r'token: "(?P<token>\d+)"')
             res = pattern.search(html)
             if res == None:
                 logging.warning(u'没有找到token');
