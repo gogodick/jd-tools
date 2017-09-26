@@ -52,5 +52,5 @@ if __name__ == '__main__':
             print 'ROLEID="'+res[i][1]+'"'
             print '########################################################'
     except Exception as e:
-        logging.warning('Exp:', e)
+        logging.warning('Exp: {}'.format(e))
 
