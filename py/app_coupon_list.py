@@ -39,4 +39,4 @@ if __name__ == '__main__':
             print 'RKey="'+res[i][2]+'"'
             print '########################################################'
     except Exception as e:
-        logging.warning('Exp:', e)
+        logging.warning('Exp: {}'.format(e))
