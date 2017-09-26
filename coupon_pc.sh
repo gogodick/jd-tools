@@ -5,7 +5,7 @@ MINUTE=00
 PROCESS=32
 FILE="pc_coupon.txt"
 if [ -e $FILE ]; then
-    rm $FILE
+    rm -f $FILE
 fi
 echo "Login to JD ..."
 python py/jd_coupon_pc.py -k $KEY -r $ROLEID -hh $HOUR -m $MINUTE -p $PROCESS -l $FILE
