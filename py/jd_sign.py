@@ -80,50 +80,6 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def pick_gb(self):
-        job_gb_url = 'https://bk.jd.com/m/channel/login/recDakaGb.html'
-        # 任务列表在 https://bk.jd.com/m/money/doJobMoney.html 中看
-        # 领钢镚的任务的 id 是 82
-        try:
-            resp = self.sess.get(job_gb_url)
-            pick_success = False
-            as_json = resp.json()
-            pick_success = as_json['success']
-            message = as_json['resultMessage']
-            logging.info('钢镚领取成功: {}; Message: {}'.format(pick_success, message))
-            return pick_success
-        except Exception as e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-
-    def mobile_sign_whitecard(self):
-        sign_url = 'https://bk.jd.com/m/channel/login/clock.html'
-        
-        logging.info(u'签到京东白卡')
-        try:
-            resp = self.sess.get(sign_url)
-            sign_success = False
-            if resp.ok:
-                as_json = resp.json()
-                sign_success = as_json['success']
-                message = as_json['resultMessage']
-                if not sign_success and as_json['resultCode'] == '0003':
-                    # 已打卡 7 次, 需要先去 "任务" 里完成领一个钢镚的任务...
-                    logging.info('已打卡 7 次, 去完成领钢镚任务...')
-                    pick_success = self.pick_gb()
-                    if pick_success:
-                        # 钢镚领取成功, 重新开始打卡任务
-                        return self.mobile_sign_whitecard()
-                    else:
-                        message = '钢镚领取任务未成功完成.'
-                logging.info('打卡成功: {}; Message: {}'.format(sign_success, message))
-            else:
-                logging.error('打卡失败: Status code: {}; Reason: {}'.format(resp.status_code, resp.reason))
-            return sign_success
-        except Exception as e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-
     def pick_poker(self):
         try:
             poker_url = 'http://api.m.jd.com/client.action?functionId=getCardResult&client=ld&clientVersion=1.0.0&body={"index":'
