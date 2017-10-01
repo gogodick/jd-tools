@@ -205,6 +205,30 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_cash(self):
+        sign_url = 'http://wyyl.jd.com/xjk/receiveReward'
+        logging.info(u'签到京东现金红包')
+        try:
+            sid = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'sid':
+                    sid = ck.value
+                    break
+            data = {
+                'sid': sid,
+            }
+            response = self.sess.post(sign_url, data=data).json()
+            message = response.get('message')
+            if response['code'] == 0:
+                logging.info('领取成功, 获得 {} 元.'.format(message))
+                return True
+            else:
+                logging.error('领取失败: {}'.format(message))
+                return False
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
