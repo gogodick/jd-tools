@@ -229,6 +229,25 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_wx(self):
+        sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/signWX/sign.action'
+        logging.info(u'签到京东微信')
+        try:
+            sid = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'sid':
+                    sid = ck.value
+                    break
+            data = {
+                'sid': sid,
+                'openid': 'oOCe-uJOrFc0pHT3r43-pJLy7a40'
+            }
+            response = self.sess.post(sign_url, data=data)
+            print response.text
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
