@@ -219,7 +219,7 @@ class JDSign(JDWrapper):
             }
             response = self.sess.post(sign_url, data=data).json()
             message = response.get('message')
-            if response['code'] == 0:
+            if response['code'] == '00':
                 logging.info('领取成功, 获得 {} 元.'.format(message))
                 return True
             else:
