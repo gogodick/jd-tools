@@ -26,6 +26,7 @@ class JDCoupon(JDWrapper):
     This class used to click JD coupon
     '''
     duration = 5
+    start_limit = 3
     def setup(self, key, role_id):
         base_urls = (
             "http://coupon.jd.com/ilink/couponSendFront/send_index.action",
@@ -84,7 +85,7 @@ class JDCoupon(JDWrapper):
         self.set_local_time()
         while 1:
             diff = self.compare_local_time(target)
-            if (diff <= 0.5):
+            if (diff <= start_limit):
                 break;
 
 def click_task(coupon_url, target, id):    
