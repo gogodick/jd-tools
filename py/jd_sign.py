@@ -152,9 +152,9 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def mobile_sign_j9(self):
+    def mobile_sign_month(self):
         sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/appdownload/lottery.action'
-        logging.info(u'签到9月每天领京豆')
+        logging.info(u'签到10月每天领京豆')
         try:
             sid = ''
             for ck in self.sess.cookies:
