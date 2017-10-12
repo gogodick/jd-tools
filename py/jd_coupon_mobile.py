@@ -95,7 +95,7 @@ class JDCoupon(JDWrapper):
     def click_fast(self, count):
         try:
             url = 'http://coupon.m.jd.com/coupons/submit.json'
-            return [self.sess.post(url, data = self.coupon_data, timeout=5) for i in range(count)]
+            return [self.sess.post(url, data = self.coupon_data, verify=False) for i in range(count)]
         except Exception, e:
             return []
 
