@@ -177,6 +177,7 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    '''
     def mobile_sign_redpacket(self):
         sign_url = 'https://ms.jr.jd.com/gw/generic/activity/h5/m/receiveZhiBoXjkRedPacket'
         logging.info(u'签到京东直播红包')
@@ -204,6 +205,7 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
+    '''
 
     def mobile_sign_cash(self):
         sign_url = 'http://wyyl.jd.com/xjk/receiveReward'
@@ -254,6 +256,48 @@ class JDSign(JDWrapper):
                     if resp_json['resultData'].get('code') == '03':
                         # 当 code 为 03 时, 表示今天已领过了, 因为领取前无法知道是否领过, 此处也当做任务成功返回
                         sign_success = True
+                return sign_success
+            else:
+                message = resp_json.get('resultMsg')
+                logging.error('领取失败: {}'.format(message))
+                return False
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_draw(self):
+        index_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/myRewardsAndLeftTimes'
+        sign_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/recieveRewad'
+        logging.info(u'签到京东金融抽奖')
+        try:
+            sid = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'sid':
+                    sid = ck.value
+                    break
+            data = {
+                'sid': sid,
+            }
+            response = self.sess.get(index_url, params=data)
+            resp_json = response.json()
+            left_times = None
+            if 'resultData' in resp_json:
+                if "data" in resp_json['resultData']:
+                    if 'leftTimes' in resp_json['resultData']['data']:
+                        left_times = resp_json['resultData']['data']['leftTimes']
+            if left_times != None and left_times < 3:
+                message = resp_json['resultMsg']
+                logging.info('领取结果: {}'.format(message))
+                return False
+            response = self.sess.get(sign_url, params=data)
+            resp_json = response.json()
+            if resp_json['resultCode'] == 0:
+                sign_success = resp_json['resultData']['success']
+                if sign_success:
+                    logging.info('领取成功, 获得 {}.'.format(resp_json['resultData']['data']['reward']['rewardName']))
+                else:
+                    message = resp_json['resultData'].get('msg') or resp_json.get('resultMsg')
+                    logging.info('领取结果: {}'.format(message))
                 return sign_success
             else:
                 message = resp_json.get('resultMsg')
