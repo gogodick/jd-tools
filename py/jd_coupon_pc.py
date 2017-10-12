@@ -68,7 +68,7 @@ class JDCoupon(JDWrapper):
 
     def click_fast(self, count):
         try:
-            return [self.sess.get(self.coupon_url, timeout=5) for i in range(count)]
+            return [self.sess.get(self.coupon_url, verify=False) for i in range(count)]
         except Exception, e:
             return []
 
