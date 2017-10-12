@@ -390,7 +390,7 @@ class JDWrapper(object):
             state = res.group('state')
              
             resp = self.sess.get(
-                "https://ssl.ptlogin2.qq.com/ptqrshow",
+                "https://ssl.ptlogin2.qq.com/ptqrshow", verify=False,
                 params = {
                     'appid': 716027609,
                     'e': 2,
@@ -420,7 +420,7 @@ class JDWrapper(object):
                     break
             while retry_times:
                 retry_times -= 1
-                resp = self.sess.get("https://ssl.ptlogin2.qq.com/ptqrlogin",
+                resp = self.sess.get("https://ssl.ptlogin2.qq.com/ptqrlogin", verify=False,
                     params = {
                         'u1': 'https://graph.qq.com/oauth/login_jump',
                         'ptqrtoken': self.hash33(qrsig),
