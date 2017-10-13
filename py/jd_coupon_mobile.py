@@ -27,16 +27,7 @@ class JDCoupon(JDWrapper):
     '''
     duration = 5
     start_limit = 3
-    coupon_data = {
-        'sid': "", 
-        'codeKey': "", 
-        'validateCode': "", 
-        'roleId': "", 
-        'key': "", 
-        'couponKey': "", 
-        'activeId': "", 
-        'couponType': "", 
-    }
+    coupon_url = ""
     def setup(self, key, role_id):
         try:
             data = {
@@ -46,31 +37,41 @@ class JDCoupon(JDWrapper):
             resp = self.sess.get('http://coupon.m.jd.com/coupons/show.action', params = data)
             if resp.status_code != requests.codes.OK:
                 return False
+            url = 'http://coupon.m.jd.com/coupons/submit.json'
             soup = bs4.BeautifulSoup(resp.text, "html.parser")
             tags = soup.select('input#sid')
             if len(tags) != 0:
-                self.coupon_data['sid'] = str(tags[0]['value'])
+                url += '?sid='
+                url += str(tags[0]['value'])
             tags = soup.select('input#codeKey')
             if len(tags) != 0:
-                self.coupon_data['codeKey'] = str(tags[0]['value'])
+                url += '&codeKey='
+                url += str(tags[0]['value'])
             tags = soup.select('input#validateCodeSign')
             if len(tags) != 0:
-                self.coupon_data['validateCode'] = str(tags[0]['value'])
+                url += '&validateCode='
+                url += str(tags[0]['value'])
             tags = soup.select('input#roleId')
             if len(tags) != 0:
-                self.coupon_data['roleId'] = str(tags[0]['value'])
+                url += '&roleId='
+                url += str(tags[0]['value'])
             tags = soup.select('input#key')
             if len(tags) != 0:
-                self.coupon_data['key'] = str(tags[0]['value'])
+                url += '&key='
+                url += str(tags[0]['value'])
             tags = soup.select('input#couponKey')
             if len(tags) != 0:
-                self.coupon_data['couponKey'] = str(tags[0]['value'])
+                url += '&couponKey='
+                url += str(tags[0]['value'])
             tags = soup.select('input#activeId')
             if len(tags) != 0:
-                self.coupon_data['activeId'] = str(tags[0]['value'])
+                url += '&activeId='
+                url += str(tags[0]['value'])
             tags = soup.select('input#couponType')
             if len(tags) != 0:
-                self.coupon_data['couponType'] = str(tags[0]['value'])
+                url += '&couponType='
+                url += str(tags[0]['value'])
+            self.coupon_url = url
             return True
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
@@ -78,13 +79,12 @@ class JDCoupon(JDWrapper):
     
     def click(self, level=None):
         try:
-            url = 'http://coupon.m.jd.com/coupons/submit.json'
-            resp = self.sess.post(url, data = self.coupon_data, timeout=5)
+            resp = self.sess.get(self.coupon_url, timeout=5)
             if not resp.ok:
                 return 0
             if level != None:
                 as_json = resp.json()
-                logging.log(level, u'{}, {}'.format(as_json['isSuccess'], as_json['returnMsg']))
+                logging.log(level, u'{}'.format(self.dump_json(as_json)))
         except Exception, e:
             if level != None:
                 logging.log(level, 'Exp {0} : {1}'.format(FuncName(), e))
@@ -94,8 +94,7 @@ class JDCoupon(JDWrapper):
 
     def click_fast(self, count):
         try:
-            url = 'http://coupon.m.jd.com/coupons/submit.json'
-            return [self.sess.head(url, params = self.coupon_data) for i in range(count)]
+            return [self.sess.head(self.coupon_url, timeout=1) for i in range(count)]
         except Exception, e:
             return []
 
@@ -137,6 +136,8 @@ def click_task(coupon_data, target, id):
 if __name__ == '__main__':
     # help message
     parser = argparse.ArgumentParser(description='Simulate to login Jing Dong, and click coupon')
+    parser.add_argument('-u', '--url', 
+                        help='Coupon URL', default="")
     parser.add_argument('-k', '--key', 
                         help='Coupon key', required=True)
     parser.add_argument('-r', '--role_id', 
@@ -161,7 +162,9 @@ if __name__ == '__main__':
     jd = JDCoupon()
     if not jd.mobile_login():
         sys.exit(1)
-    if not jd.setup(options.key, options.role_id):
+    if len(options.url) > 0:
+        jd.coupon_url = options.url
+    elif not jd.setup(options.key, options.role_id):
         sys.exit(1)
     jd.click(logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)

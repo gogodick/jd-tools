@@ -51,23 +51,14 @@ class JDWrapper(object):
 
         }
 
-    @staticmethod
-    def print_json(resp_text):
+    def dump_json(self, json_object):
         '''
         format the response content
         '''
-        if resp_text[0] == '(':
-            resp_text = resp_text[1:-1]
-        
-        for k,v in json.loads(resp_text).items():
-            logging.warning(u'%s : %s' % (k, v))
-
-    @staticmethod
-    def response_status(resp):
-        if resp.status_code != requests.codes.OK:
-            logging.warning('Status: %u, Url: %s' % (resp.status_code, resp.url))
-            return False
-        return True
+        dump_str = ''
+        for element in json_object:
+            dump_str += u'{}, '.format(json_object[element])
+        return dump_str
 
     def get_network_time(self):
         try:
