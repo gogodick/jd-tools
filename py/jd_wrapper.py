@@ -37,6 +37,7 @@ class JDWrapper(object):
     pc_cookie_file = "pc_cookie.dat"
     def __init__(self):
         self.sess = requests.Session()
+        self.sess.verify = False
 
         self.headers = {
             'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
@@ -390,7 +391,7 @@ class JDWrapper(object):
             state = res.group('state')
              
             resp = self.sess.get(
-                "https://ssl.ptlogin2.qq.com/ptqrshow", verify=False,
+                "https://ssl.ptlogin2.qq.com/ptqrshow", 
                 params = {
                     'appid': 716027609,
                     'e': 2,
@@ -420,7 +421,7 @@ class JDWrapper(object):
                     break
             while retry_times:
                 retry_times -= 1
-                resp = self.sess.get("https://ssl.ptlogin2.qq.com/ptqrlogin", verify=False,
+                resp = self.sess.get("https://ssl.ptlogin2.qq.com/ptqrlogin", 
                     params = {
                         'u1': 'https://graph.qq.com/oauth/login_jump',
                         'ptqrtoken': self.hash33(qrsig),

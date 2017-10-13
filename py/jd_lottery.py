@@ -46,7 +46,7 @@ class JDLottery(JDWrapper):
         prize_list = []
         headers = {'referer': u'http://ls.activity.jd.com/lotteryApi/getWinnerList.action?lotteryCode=' + lotterycode}
         getwater = requests.get('http://ls.activity.jd.com/lotteryApi/getWinnerList.action?lotteryCode=' + lotterycode,
-                                headers=headers, verify=False).text
+                                headers=headers).text
         for each in re.findall('{"prizeName":(.*?)}', getwater, re.S):
             prizename = re.findall('"(.*?)","userPin', each, re.S)[0]
             windate = re.findall('"winDate":"(.*?)"', each, re.S)[0]
