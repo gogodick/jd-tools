@@ -19,5 +19,5 @@ PASS="jd123456"
 TO="jd_coupon_log@163.com"
 if [ -e $FILE ]; then
     echo "Send email to $TO ..."
-    #python py/email163.py -u $USER -p $PASS -t $TO -f $FILE
+    python py/email163.py -u $USER -p $PASS -t $TO -f $FILE
 fi
