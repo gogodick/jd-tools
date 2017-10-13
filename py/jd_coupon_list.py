@@ -40,7 +40,7 @@ if __name__ == '__main__':
             '_' : str(as_json['serverTime']),
         }
         resp = jd.sess.get('http://a.jd.com/indexAjax/getCouponListByCatalogId.html', params=data, headers=headers)
-        pattern = re.compile(r'"key":"(?P<key>\w+)","roleId":"(?P<roleId>\w+)".*?,"limitStr":"(?P<limitStr>.*?)","startTime":"(?P<startTime>.*?)",')
+        pattern = re.compile(r'"key":"(?P<key>\w+)","roleId":"(?P<roleId>\w+)".*?,"limitStr":"(?P<limitStr>.*?)".*?,"startTime":"(?P<startTime>.*?)",')
         res = pattern.findall(resp.content)
         if len(res) > 0:
             print u'找到{}个优惠券'.format(len(res))
