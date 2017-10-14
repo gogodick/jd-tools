@@ -1,7 +1,8 @@
+URL=''
 URL='https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&body={"activityId":"fKh83rNgnrfx7id9gohjnkHrwfK","scene":"1","args":"key=768b4891fa9b48f79f704492467dee95,roleId=8549498","mitemAddrId":"","geo":{"lng":"","lat":""}}&client=wh5&clientVersion=1.0.0'
 KEY="768b4891fa9b48f79f704492467dee95"
 ROLEID="8549498"
-HOUR=10
+HOUR=20
 MINUTE=00
 PROCESS=32
 FILE="mobile_coupon.txt"

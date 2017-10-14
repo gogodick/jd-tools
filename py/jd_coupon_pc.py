@@ -25,8 +25,10 @@ class JDCoupon(JDWrapper):
     '''
     This class used to click JD coupon
     '''
+    wait_interval = 1
+    wait_delay = 5
     duration = 5
-    start_limit = 3
+    start_limit = 1
     def setup(self, key, role_id):
         base_urls = (
             "http://coupon.jd.com/ilink/couponSendFront/send_index.action",
@@ -68,18 +70,22 @@ class JDCoupon(JDWrapper):
 
     def click_fast(self, count):
         try:
-            return [self.sess.head(self.coupon_url) for i in range(count)]
+            return [self.sess.head(self.coupon_url, timeout=0.2) for i in range(count)]
         except Exception, e:
             return []
 
-    def relax_wait(self, target, delay):
+    def relax_wait(self, target):
+        counter = 0
         self.set_local_time()
         while 1:
-            self.click(logging.INFO)
+            if counter >= self.wait_delay:
+                self.click(logging.INFO)
+                counter = 0
             diff = self.compare_local_time(target)
             if (diff <= 60) and (diff >= -60):
                 break;
-            time.sleep(delay)
+            time.sleep(self.wait_interval)
+            counter += self.wait_interval
 
     def busy_wait(self, target):
         self.set_local_time()
@@ -138,7 +144,7 @@ if __name__ == '__main__':
         sys.exit(1)
     jd.click(logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)
-    jd.relax_wait(target, 5)
+    jd.relax_wait(target)
     jd.click(logging.WARNING)
     wait_flag = multiprocessing.Value('i', 0)
     run_flag = multiprocessing.Value('i', 0)

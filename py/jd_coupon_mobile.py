@@ -25,8 +25,10 @@ class JDCoupon(JDWrapper):
     '''
     This class used to click JD coupon
     '''
+    wait_interval = 1
+    wait_delay = 30
     duration = 5
-    start_limit = 3
+    start_limit = 1
     coupon_url = ""
     def setup(self, key, role_id):
         try:
@@ -94,18 +96,22 @@ class JDCoupon(JDWrapper):
 
     def click_fast(self, count):
         try:
-            return [self.sess.head(self.coupon_url, timeout=1) for i in range(count)]
+            return [self.sess.head(self.coupon_url, timeout=0.2) for i in range(count)]
         except Exception, e:
             return []
 
-    def relax_wait(self, target, delay):
+    def relax_wait(self, target):
+        counter = 0
         self.set_local_time()
         while 1:
-            self.click(logging.INFO)
+            if counter >= self.wait_delay:
+                self.click(logging.INFO)
+                counter = 0
             diff = self.compare_local_time(target)
             if (diff <= 60) and (diff >= -60):
                 break;
-            time.sleep(delay)
+            time.sleep(self.wait_interval)
+            counter += self.wait_interval
 
     def busy_wait(self, target):
         self.set_local_time()
@@ -114,14 +120,14 @@ class JDCoupon(JDWrapper):
             if (diff <= self.start_limit):
                 break;
 
-def click_task(coupon_data, target, id):    
+def click_task(coupon_url, target, id):    
     cnt = 0
     jd = JDCoupon()
     logging.warning(u'进程{}:开始运行'.format(id+1))
     if not jd.load_cookie(jd.mobile_cookie_file):
         logging.warning(u'进程{}:无法加载cookie'.format(id+1))
         return 0
-    jd.coupon_data = coupon_data
+    jd.coupon_url = coupon_url
     while(wait_flag.value != 0):
         pass
     result = []
@@ -168,7 +174,7 @@ if __name__ == '__main__':
         sys.exit(1)
     jd.click(logging.WARNING)
     target = (options.hour * 3600) + (options.minute * 60)
-    jd.relax_wait(target, 5)
+    jd.relax_wait(target)
     jd.click(logging.WARNING)
     wait_flag = multiprocessing.Value('i', 0)
     run_flag = multiprocessing.Value('i', 0)
@@ -179,7 +185,7 @@ if __name__ == '__main__':
     wait_flag.value = 1
     run_flag.value = 1
     for i in range(options.process):
-        result.append(pool.apply_async(click_task, args=(jd.coupon_data, target, i,)))
+        result.append(pool.apply_async(click_task, args=(jd.coupon_url, target, i,)))
     jd.busy_wait(target)
     wait_flag.value = 0
     run_time = jd.duration
