@@ -120,7 +120,7 @@ class JDCoupon(JDWrapper):
             if (diff <= self.start_limit):
                 break;
 
-def click_task(coupon_url, target, id):    
+def click_task(coupon_url, id):    
     cnt = 0
     jd = JDCoupon()
     logging.warning(u'进程{}:开始运行'.format(id+1))
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     wait_flag.value = 1
     run_flag.value = 1
     for i in range(options.process):
-        result.append(pool.apply_async(click_task, args=(jd.coupon_url, target, i,)))
+        result.append(pool.apply_async(click_task, args=(jd.coupon_url, i,)))
     jd.busy_wait(target)
     wait_flag.value = 0
     run_time = jd.duration
