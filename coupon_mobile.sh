@@ -1,8 +1,8 @@
 URL=''
-URL='https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&body={"activityId":"fKh83rNgnrfx7id9gohjnkHrwfK","scene":"1","args":"key=768b4891fa9b48f79f704492467dee95,roleId=8549498","mitemAddrId":"","geo":{"lng":"","lat":""}}&client=wh5&clientVersion=1.0.0'
-KEY="768b4891fa9b48f79f704492467dee95"
-ROLEID="8549498"
-HOUR=20
+URL='http://api.m.jd.com/client.action?functionId=newBabelAwardCollection&clientVersion=6.5.0&client=android&uuid=357755070126840-e458b88e8e4c&st=1508155368481&sign=13bdfc854b9010954ca27e09837b8cbe&sv=121&body={"activityId":"2kdsbHwauQ2kDj8rQghLZAdTWHei","scene":"1","args":"key=01c8d88792ca4ab2aaed8a65795a1768,roleId=8554538"}'
+KEY="01c8d88792ca4ab2aaed8a65795a1768"
+ROLEID="8554538"
+HOUR=00
 MINUTE=00
 PROCESS=32
 FILE="mobile_coupon.txt"
