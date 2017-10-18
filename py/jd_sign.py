@@ -307,6 +307,45 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_bank(self):
+        sign_url = 'https://kx.jd.com/dzp/go'
+        logging.info(u'签到京东小金库抽奖')
+        try:
+            sid = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'sid':
+                    sid = ck.value
+                    break
+            data = {
+                'activityno': '16-128171018023345181114',
+                'sid': sid,
+            }
+            response = self.sess.get(sign_url, params=data)
+            pattern = re.compile(r'"success":(?P<success>\w+)')
+            res = pattern.search(response.text)
+            if res == None:
+                logging.warning(u'没有找到success');
+                return False
+            if res.group('success') == "false":
+                pattern = re.compile(r'"msg":"(?P<msg>.*?)"')
+                res = pattern.search(response.text)
+                if res == None:
+                    logging.warning(u'没有找到msg');
+                    return False
+                message = res.group('msg')
+                logging.info('领取结果: {}'.format(message))
+                return True
+            pattern = re.compile(r'"benefitName":(?P<benefitName>.*?)')
+            res = pattern.search(response.text)
+            if res == None:
+                logging.warning(u'没有找到benefitName');
+                return False
+            logging.info('领取成功, 获得 {}.'.format(res.group('benefitName')))
+            return True
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
