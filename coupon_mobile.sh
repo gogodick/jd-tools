@@ -1,8 +1,7 @@
 URL=''
-URL='http://api.m.jd.com/client.action?functionId=newBabelAwardCollection&clientVersion=6.5.0&client=android&uuid=357755070126840-e458b88e8e4c&st=1508155368481&sign=13bdfc854b9010954ca27e09837b8cbe&sv=121&body={"activityId":"2kdsbHwauQ2kDj8rQghLZAdTWHei","scene":"1","args":"key=01c8d88792ca4ab2aaed8a65795a1768,roleId=8554538"}'
-KEY="01c8d88792ca4ab2aaed8a65795a1768"
-ROLEID="8554538"
-HOUR=00
+KEY="f684fd08ba8a4f76aeb70c3f1f43b3e9"
+ROLEID="8604962"
+HOUR=08
 MINUTE=00
 PROCESS=32
 FILE="mobile_coupon.txt"
