@@ -346,6 +346,25 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_shake(self):
+        sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/shake/shake2award.action'
+        logging.info(u'签到京东摇一摇')
+        try:
+            sid = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'sid':
+                    sid = ck.value
+                    break
+            data = {
+                'sid': sid,
+            }
+            for i in range(3):
+                response = self.sess.post(sign_url, data=data)
+                print response.text
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
