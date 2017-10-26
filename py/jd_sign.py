@@ -360,7 +360,11 @@ class JDSign(JDWrapper):
             }
             for i in range(3):
                 response = self.sess.post(sign_url, data=data)
-                print response.text
+                resp_json = response.json()
+                if resp_json['status'] == 0:
+                    logging.info('领取成功, 获得 {}.'.format(resp_json['name']))
+                else:
+                    logging.info('领取结果: {}'.format(resp_json['resultMsg']))
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
