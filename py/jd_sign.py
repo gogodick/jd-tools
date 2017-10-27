@@ -307,7 +307,7 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def mobile_sign_bank(self):
+    def mobile_sign_bank1(self):
         sign_url = 'https://kx.jd.com/dzp/go'
         logging.info(u'签到京东小金库抽奖')
         try:
@@ -342,6 +342,23 @@ class JDSign(JDWrapper):
                 return False
             logging.info('领取成功, 获得 {}.'.format(res.group('benefitName')))
             return True
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_bank2(self):
+        sign_url = 'https://home.jdpay.com/my/signIn'
+        logging.info(u'签到京东小金库')
+        try:
+            response = self.sess.get(sign_url)
+            print response.text
+            resp_json = response.json()
+            if resp_json['data']['resBusiCode'] == 0:
+                logging.info('领取成功, 获得 {} 京豆.'.format(resp_json['data']['resBusiData']['thisAmount']))
+                return True
+            else:
+                logging.info('领取结果: {}'.format(resp_json['data']['resBusiMsg']))
+                return True
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
