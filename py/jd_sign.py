@@ -335,11 +335,12 @@ class JDSign(JDWrapper):
                 message = res.group('msg')
                 logging.info('领取结果: {}'.format(message))
                 return True
-            pattern = re.compile(r'"benefitName":(?P<benefitName>.*?)')
+            pattern = re.compile(r'"benefitName":"(?P<benefitName>.*?)"')
             res = pattern.search(response.text)
             if res == None:
                 logging.warning(u'没有找到benefitName');
                 return False
+            print res.groups()
             logging.info('领取成功, 获得 {}.'.format(res.group('benefitName')))
             return True
         except Exception as e:
@@ -351,7 +352,6 @@ class JDSign(JDWrapper):
         logging.info(u'签到京东小金库')
         try:
             response = self.sess.get(sign_url)
-            print response.text
             resp_json = response.json()
             if resp_json['data']['resBusiCode'] == 0:
                 logging.info('领取成功, 获得 {} 京豆.'.format(resp_json['data']['resBusiData']['thisAmount']))
