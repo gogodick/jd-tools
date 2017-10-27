@@ -340,7 +340,6 @@ class JDSign(JDWrapper):
             if res == None:
                 logging.warning(u'没有找到benefitName');
                 return False
-            print res.groups()
             logging.info('领取成功, 获得 {}.'.format(res.group('benefitName')))
             return True
         except Exception as e:
