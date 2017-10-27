@@ -377,7 +377,7 @@ class JDSign(JDWrapper):
             for i in range(3):
                 response = self.sess.post(sign_url, data=data)
                 resp_json = response.json()
-                if resp_json['status'] == 0:
+                if resp_json['resultCode'] == 200 and resp_json['status'] == 0:
                     logging.info('领取成功, 获得 {}.'.format(resp_json['name']))
                 else:
                     logging.info('领取结果: {}'.format(resp_json['resultMsg']))
