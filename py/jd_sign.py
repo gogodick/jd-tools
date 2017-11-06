@@ -317,7 +317,7 @@ class JDSign(JDWrapper):
                     sid = ck.value
                     break
             data = {
-                'activityno': '16-128171018023345181114',
+                'activityno': '16-139171031162017256643',
                 'sid': sid,
             }
             response = self.sess.get(sign_url, params=data)
