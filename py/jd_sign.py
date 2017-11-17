@@ -266,8 +266,8 @@ class JDSign(JDWrapper):
             return False
 
     def mobile_sign_draw(self):
-        index_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/myRewardsAndLeftTimes'
-        sign_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/recieveRewad'
+        index_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/myRewardsAndLeftTimes1'
+        sign_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/recieveRewad1'
         logging.info(u'签到京东金融抽奖')
         try:
             sid = ''
