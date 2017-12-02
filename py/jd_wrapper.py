@@ -334,23 +334,19 @@ class JDWrapper(object):
         return h & 0x7fffffff
 
     def mobile_verify_login(self):
-        url = "https://home.m.jd.com/wallet/wallet.action"
+        url = "https://wq.jd.com/user/info/QueryJDUserInfo?sceneid=80027&sceneval=2"
         try:
             resp = self.sess.get(url, allow_redirects=False)
             if resp.status_code != requests.codes.OK:
                 print resp.status_code
                 return False
-            if resp.is_redirect and 'passport' in resp.headers['Location']:
-                print resp.headers
-                return False
             else:
-                soup = bs4.BeautifulSoup(resp.text, "html.parser")
-                tags = soup.select('div.jingdou-num')
-                info = tags[0].text.strip(' \t\r\n')
-                if len(info) == 0:
-                    return False
-                logging.warning(u'账户有{}'.format(info))
-                return True
+                resp_json = resp.json()
+                if "base" in resp_json and "userLevel" in resp_json["base"]:
+                    if resp_json["base"]["userLevel"] > 0:
+                        logging.warning(u'账户有{}京豆'.format(resp_json["base"]["jdNum"]))
+                        return True
+                return False
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
