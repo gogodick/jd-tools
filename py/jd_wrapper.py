@@ -355,6 +355,7 @@ class JDWrapper(object):
         try:
             logging.warning('+++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             logging.warning(u'{0} > 请打开QQ手机客户端，准备扫码登陆:'.format(time.ctime()))
+            self.sess.get("https://passport.m.jd.com/user/login.action?returnurl=https://m.jd.com?indexloc=1")
             resp = self.sess.get("https://plogin.m.jd.com/cgi-bin/m/qqlogin",
                 params = {
                     'appid': 100,
