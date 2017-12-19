@@ -385,11 +385,27 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_zdouble(self):
+        sign_url = 'http://ljd.m.jd.com/countersign/receiveAward.json'
+        logging.info(u'签到京东双签')
+        try:
+            response = self.sess.get(sign_url)
+            resp_json = response.json()
+            if 'res' in resp_json and 'data' in resp_json['res']:
+                data = resp_json['res']['data'][0]
+                logging.info('领取成功: {} {}'.format(data['awardCount'], data['awardName']))
+            else:
+                logging.info('领取失败: {}'.format(resp_json))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
     jd = JDSign()
     func_list = dir(jd)
+    func_list = sorted(func_list)
     if not jd.pc_login():
         sys.exit(1)
     for func in func_list:
