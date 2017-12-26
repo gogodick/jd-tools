@@ -26,7 +26,7 @@ class JDCoupon(JDWrapper):
     This class used to click JD coupon
     '''
     wait_interval = 1
-    wait_delay = 5
+    wait_delay = 10
     duration = 5
     start_limit = 1
     def setup(self, key, role_id):
