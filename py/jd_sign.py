@@ -400,6 +400,17 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_enterprise(self):
+        sign_url = 'https://api.m.jd.com/client.action?functionId=userSign&body=%7B%22params%22%3A%22%7B%5C%22signId%5C%22%3A%5C%2210000499%5C%22%2C%5C%22ruleSrv%5C%22%3A%5C%2200001743_3995400_t0%5C%22%2C%5C%22isFloatLayer%5C%22%3Atrue%7D%22%2C%22mitemAddrId%22%3A%22%22%2C%22geo%22%3A%7B%22lng%22%3A%22%22%2C%22lat%22%3A%22%22%7D%7D&screen=1920*949&client=wh5&clientVersion=1.0.0'
+        logging.info(u'签到京东企业购')
+        try:
+            response = self.sess.get(sign_url)
+            resp_json = response.json()
+            logging.info('领取结果: {}'.format(resp_json))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
