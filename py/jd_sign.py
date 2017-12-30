@@ -346,22 +346,6 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def mobile_sign_bank2(self):
-        sign_url = 'https://home.jdpay.com/my/signIn'
-        logging.info(u'签到京东小金库')
-        try:
-            response = self.sess.get(sign_url)
-            resp_json = response.json()
-            if resp_json['data']['resBusiCode'] == 0:
-                logging.info('领取成功, 获得 {} 京豆.'.format(resp_json['data']['resBusiData']['thisAmount']))
-                return True
-            else:
-                logging.info('领取结果: {}'.format(resp_json['data']['resBusiMsg']))
-                return True
-        except Exception as e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-
     def mobile_sign_shake(self):
         sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/shake/shake2award.action'
         logging.info(u'签到京东摇一摇')
@@ -400,13 +384,16 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def mobile_sign_enterprise(self):
-        sign_url = 'https://api.m.jd.com/client.action?functionId=userSign&body=%7B%22params%22%3A%22%7B%5C%22signId%5C%22%3A%5C%2210000499%5C%22%2C%5C%22ruleSrv%5C%22%3A%5C%2200001743_3995400_t0%5C%22%2C%5C%22isFloatLayer%5C%22%3Atrue%7D%22%2C%22mitemAddrId%22%3A%22%22%2C%22geo%22%3A%7B%22lng%22%3A%22%22%2C%22lat%22%3A%22%22%7D%7D&screen=1920*949&client=wh5&clientVersion=1.0.0'
-        logging.info(u'签到京东企业购')
+    def mobile_sign_lottery(self):
+        sign_url = 'http://lottery.jd.com/award/lottery?actKey=a2Ybe2'
+        logging.info(u'签到京东抽奖')
         try:
             response = self.sess.get(sign_url)
             resp_json = response.json()
-            logging.info('领取结果: {}'.format(resp_json))
+            if 'msg' in resp_json:
+                logging.info('领取结果: {} {}'.format(resp_json['msg'], resp_json))
+            else:
+                logging.info('领取结果: {}'.format(resp_json))
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
