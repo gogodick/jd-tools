@@ -400,6 +400,27 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_game(self):
+        index_url = 'https://gamecenter.m.jd.com/hall/verify'
+        sign_url = 'http://ljd.m.jd.com/countersign/receiveAward.json'
+        logging.info(u'签到京东游戏')
+        try:
+            headers = {'Referer': 'https://gamecenter.m.jd.com'}
+            response = self.sess.get(index_url, headers=headers)
+            resp_json = response.json()
+            if 'valid' in resp_json and resp_json['valid'] == True:
+                data = {
+                    'token': resp_json['timestamp'],
+                }
+                response = self.sess.get(sign_url, params=data)
+                resp_json = response.json()
+                logging.info('领取结果: {}'.format(resp_json))
+            else:
+                logging.info('领取结果: {}'.format(resp_json['message']))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
