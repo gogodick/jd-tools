@@ -402,7 +402,7 @@ class JDSign(JDWrapper):
 
     def mobile_sign_game(self):
         index_url = 'https://gamecenter.m.jd.com/hall/verify'
-        sign_url = 'http://ljd.m.jd.com/countersign/receiveAward.json'
+        sign_url = 'https://gamecenter.m.jd.com/hall/play'
         logging.info(u'签到京东游戏')
         try:
             headers = {'Referer': 'https://gamecenter.m.jd.com'}
