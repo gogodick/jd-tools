@@ -1,7 +1,7 @@
 URL=''
-URL='https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&body=%7B%22activityId%22%3A%222XBYoH2gD8HWUoxcfdwr6NvseqR5%22%2C%22from%22%3A%22H5node%22%2C%22scene%22%3A%221%22%2C%22args%22%3A%22key%3De053941704af4cd9806d3647f9856301%2CroleId%3D9742498%22%2C%22mitemAddrId%22%3A%22%22%2C%22geo%22%3A%7B%22lng%22%3A%22%22%2C%22lat%22%3A%22%22%7D%7D&client=wh5&clientVersion=1.0.0'
-KEY="e053941704af4cd9806d3647f9856301"
-ROLEID="9742498"
+URL='https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&body=%7B%22activityId%22%3A%22W1UcShWfWYzdTjWrGhdACkswC1L%22%2C%22from%22%3A%22H5node%22%2C%22scene%22%3A%221%22%2C%22args%22%3A%22key%3Ddcf36f20e26644e7845382bf32fbaa2e%2CroleId%3D9909072%22%2C%22mitemAddrId%22%3A%22%22%2C%22geo%22%3A%7B%22lng%22%3A%22%22%2C%22lat%22%3A%22%22%7D%7D&client=wh5&clientVersion=1.0.0'
+KEY="dcf36f20e26644e7845382bf32fbaa2e"
+ROLEID="9909072"
 HOUR=20
 MINUTE=00
 PROCESS=32
