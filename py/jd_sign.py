@@ -265,7 +265,7 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def mobile_sign_draw(self):
+    def mobile_sign_jrdraw(self):
         index_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/myRewardsAndLeftTimes1'
         sign_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/recieveRewad1'
         logging.info(u'签到京东金融抽奖')
@@ -412,7 +412,8 @@ class JDSign(JDWrapper):
                 data = {
                     'token': resp_json['timestamp'],
                 }
-                response = self.sess.get(sign_url, params=data)
+                print data
+                response = self.sess.get(sign_url, params=data, headers=headers)
                 resp_json = response.json()
                 logging.info('领取结果: {}'.format(resp_json))
             else:
@@ -420,6 +421,62 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
+
+    def mobile_sign_draw(self):
+        sign_url = 'https://wq.jd.com/activepersistent/muserwelfare/draw?active=Mjiugongge&type=2'
+        logging.info(u'签到京东每日抽奖')
+        try:
+            response = self.sess.get(sign_url)
+            pattern = re.compile(r'"prize":\[(?P<prize>.*)\]')
+            res = pattern.search(response.text)
+            if res == None:
+                logging.warning(u'没有找到prize');
+                return False
+            prize = res.group('prize')
+            pattern = re.compile(r'"retmsg":"(?P<retmsg>.*)"')
+            res = pattern.search(response.text)
+            if res == None:
+                logging.warning(u'没有找到retmsg');
+                return False
+            retmsg = res.group('retmsg')
+            logging.info('领取结果: {} {}'.format(retmsg, prize))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_dailysign(self):
+        index_url = 'https://wq.jd.com/activepersistent/muserwelfare/query?sceneval=2'
+        sign_url = 'https://wq.jd.com/activepersistent/muserwelfare/sign'
+        logging.info(u'签到京东每日签到')
+        try:
+            response = self.sess.get(index_url)
+            print response.text
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+        for i in range(1,2,1):
+            data = {
+                'active': 'Myonghufliqiandao',
+                'level': str(7+i),
+                'num': str(i),
+            }
+            try:
+                response = self.sess.post('https://wq.jd.com/activepersistent/muserwelfare/sign?active=Myonghufliqiandao&level=8&num=1')
+                print response.text
+                response = self.sess.get(sign_url, params=data)
+                pattern = re.compile(u'"retmsg":"(?P<retmsg>.*)"')
+                print data
+                print u"{}".format(response.text)
+                res = pattern.search(response.text)
+                if res == None:
+                    logging.warning(u'没有找到retmsg');
+                    return False
+                retmsg = res.group('retmsg')
+                logging.info(u'领取结果{}: {}'.format(i, retmsg))
+                time.sleep(1)
+            except Exception as e:
+                logging.error('Exp {0} : {1}'.format(FuncName(), e))
+                return False
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
