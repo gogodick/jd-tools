@@ -412,7 +412,6 @@ class JDSign(JDWrapper):
                 data = {
                     'token': resp_json['timestamp'],
                 }
-                print data
                 response = self.sess.get(sign_url, params=data, headers=headers)
                 resp_json = response.json()
                 logging.info('领取结果: {}'.format(resp_json))
@@ -457,11 +456,11 @@ class JDSign(JDWrapper):
         for i in range(1,2,1):
             data = {
                 'active': 'Myonghufliqiandao',
-                'level': str(7+i),
-                'num': str(i),
+                'level': str(7),
+                'num': str(7),
             }
             try:
-                response = self.sess.post('https://wq.jd.com/activepersistent/muserwelfare/sign?active=Myonghufliqiandao&level=8&num=1')
+                response = self.sess.get('https://wq.jd.com/activepersistent/muserwelfare/sign?num=7&active=Myonghufliqiandao&level=7&_=1515286469661&sceneval=2&callback=jsonpCBKF&g_ty=ls')
                 print response.text
                 response = self.sess.get(sign_url, params=data)
                 pattern = re.compile(u'"retmsg":"(?P<retmsg>.*)"')
