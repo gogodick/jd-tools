@@ -1,7 +1,7 @@
 URL=''
-URL='https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&body=%7B%22activityId%22%3A%22W1UcShWfWYzdTjWrGhdACkswC1L%22%2C%22from%22%3A%22H5node%22%2C%22scene%22%3A%221%22%2C%22args%22%3A%22key%3Ddcf36f20e26644e7845382bf32fbaa2e%2CroleId%3D9909072%22%2C%22mitemAddrId%22%3A%22%22%2C%22geo%22%3A%7B%22lng%22%3A%22%22%2C%22lat%22%3A%22%22%7D%7D&client=wh5&clientVersion=1.0.0'
-KEY="dcf36f20e26644e7845382bf32fbaa2e"
-ROLEID="9909072"
+URL='https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&body=%7B%22activityId%22%3A%22wvYhk8cuad8e2eJFg8dXZ75ew8f%22%2C%22from%22%3A%22H5node%22%2C%22scene%22%3A%221%22%2C%22args%22%3A%22key%3Db5e78c17d3cc4e25874c9564d34f26d3%2CroleId%3D9963721%22%2C%22mitemAddrId%22%3A%22%22%2C%22geo%22%3A%7B%22lng%22%3A%22%22%2C%22lat%22%3A%22%22%7D%7D&client=wh5&clientVersion=1.0.0'
+KEY="b5e78c17d3cc4e25874c9564d34f26d3"
+ROLEID="9963721"
 HOUR=20
 MINUTE=00
 PROCESS=32
