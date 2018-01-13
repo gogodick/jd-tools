@@ -425,7 +425,8 @@ class JDSign(JDWrapper):
         sign_url = 'https://wq.jd.com/activepersistent/muserwelfare/draw?active=Mjiugongge&type=2'
         logging.info(u'签到京东每日抽奖')
         try:
-            response = self.sess.get(sign_url)
+            headers = {'Referer': 'https://wqs.jd.com/promote/201712/mwelfare/m.html?sceneval=2&logintag='}
+            response = self.sess.get(sign_url, headers=headers)
             pattern = re.compile(r'"prize":\[(?P<prize>.*)\]')
             res = pattern.search(response.text)
             if res == None:
@@ -442,40 +443,6 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
-
-    def mobile_sign_dailysign(self):
-        index_url = 'https://wq.jd.com/activepersistent/muserwelfare/query?sceneval=2'
-        sign_url = 'https://wq.jd.com/activepersistent/muserwelfare/sign'
-        logging.info(u'签到京东每日签到')
-        try:
-            response = self.sess.get(index_url)
-            print response.text
-        except Exception as e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-        for i in range(1,2,1):
-            data = {
-                'active': 'Myonghufliqiandao',
-                'level': str(7),
-                'num': str(7),
-            }
-            try:
-                response = self.sess.get('https://wq.jd.com/activepersistent/muserwelfare/sign?num=7&active=Myonghufliqiandao&level=7&_=1515286469661&sceneval=2&callback=jsonpCBKF&g_ty=ls')
-                print response.text
-                response = self.sess.get(sign_url, params=data)
-                pattern = re.compile(u'"retmsg":"(?P<retmsg>.*)"')
-                print data
-                print u"{}".format(response.text)
-                res = pattern.search(response.text)
-                if res == None:
-                    logging.warning(u'没有找到retmsg');
-                    return False
-                retmsg = res.group('retmsg')
-                logging.info(u'领取结果{}: {}'.format(i, retmsg))
-                time.sleep(1)
-            except Exception as e:
-                logging.error('Exp {0} : {1}'.format(FuncName(), e))
-                return False
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  

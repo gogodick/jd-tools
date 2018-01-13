@@ -334,18 +334,17 @@ class JDWrapper(object):
         return h & 0x7fffffff
 
     def mobile_verify_login(self):
-        url = "https://wq.jd.com/user/info/QueryJDUserInfo?sceneid=80027&sceneval=2"
+        url = "https://wq.jd.com/userinfom/QueryAssetsInfoM?sceneval=2"
         try:
-            resp = self.sess.get(url, allow_redirects=False)
+            headers = {'Referer': 'https://home.m.jd.com/myJd/newhome.action'}
+            resp = self.sess.get(url, headers=headers)
             if resp.status_code != requests.codes.OK:
-                print resp.status_code
                 return False
             else:
                 resp_json = resp.json()
-                if "base" in resp_json and "userLevel" in resp_json["base"]:
-                    if resp_json["base"]["userLevel"] > 0:
-                        logging.warning(u'账户有{}京豆'.format(resp_json["base"]["jdNum"]))
-                        return True
+                if "errcode" in resp_json and resp_json["errcode"] == 0:
+                    logging.warning(u'账户有{}京豆'.format(resp_json["beannum"]))
+                    return True
                 return False
         except Exception, e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
