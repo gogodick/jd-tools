@@ -7,6 +7,7 @@ requests.packages.urllib3.disable_warnings()
 import os
 import time
 import datetime
+import cookielib
 import json
 import random
 import re
@@ -473,6 +474,110 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
+
+    def get_token(self):
+        e = ''
+        for ck in self.sess.cookies:
+            if ck.name == 'wq_skey':
+                e = ck.value
+                break
+        r = len(e)
+        a = 5381
+        for t in range(r):
+            a+=(a<<5)+ord(e[t])
+        return a&2147483647
+
+    def mobile_sign_beangame(self):
+        sign_url = 'https://wq.jd.com/mlogin/mpage/Login?rurl=http%3A%2F%2Fwqs.jd.com%2Fmy%2Findexv2.shtml%3Fshownav%3D1%26ptag%3D137652.25.3'
+        token_url = 'https://wq.jd.com/active/getfunction'
+        sp_url = 'https://wq.jd.com/activepersistent/jdbeans/welfaredrawv2'
+        out_url = 'https://wq.jd.com/activepersistent/jdbeans/outboxv2'
+        in_url = 'https://wq.jd.com/activepersistent/jdbeans/inboxv2'
+        logging.info(u'签到京豆培养仓')
+        try:
+            resp = self.sess.get(sign_url)
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+        g_tk = self.get_token()
+        try:
+            data = {
+                'g_tk': g_tk,
+            }
+            resp = self.sess.get(token_url, params=data)
+            pattern = re.compile(r'"TOKEN":"(?P<token>.*?)".*a =(?P<a>.*?);')
+            res = pattern.search(resp.text)
+            if res == None:
+                logging.warning(u'没有找到token');
+                return False
+            token = res.group('token')
+            a = res.group('a')
+            array = a.split('+')
+            array = map(eval, array)
+            array = map(str, array)
+            promotejs = token + ''.join(array)
+            logging.info("token={}, a={}, promotejs={}".format(token, a, promotejs))
+            nc = cookielib.Cookie(
+                version=0,
+                name='promotejs',
+                value=promotejs,
+                port=None,
+                port_specified=False,
+                domain=".jd.com",
+                domain_specified=True,
+                domain_initial_dot=False,
+                path="/",
+                path_specified=True,
+                secure=False,
+                expires=None,
+                discard=False,
+                comment=None,
+                comment_url=None,
+                rest=None
+            )
+            self.sess.cookies.set_cookie(nc)
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+        try:
+            data = {
+                'active': 'JD_shangyecang14',
+                'g_tk': g_tk,
+            }
+            resp = self.sess.get(sp_url, params=data)
+            pattern = re.compile(r'"retmsg":"(?P<retmsg>.*?)"')
+            res = pattern.search(resp.text)
+            if res == None:
+                logging.warning(u'没有找到retmsg');
+                return False
+            retmsg = res.group('retmsg')
+            logging.info('0号: {}'.format(retmsg))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+        for i in range(1,10,1):
+            data = {
+                'boxindex': str(i),
+                'g_tk': g_tk,
+            }
+            try:
+                pattern = re.compile(r'"retmsg":"(?P<retmsg>.*)"')
+                resp = self.sess.get(out_url, params=data)
+                res = pattern.search(resp.text)
+                if res == None:
+                    logging.warning(u'没有找到retmsg');
+                    return False
+                retmsg1 = res.group('retmsg')
+                resp = self.sess.get(in_url, params=data)
+                res = pattern.search(resp.text)
+                if res == None:
+                    logging.warning(u'没有找到retmsg');
+                    return False
+                retmsg2 = res.group('retmsg')    
+                logging.info('{}号: {}, {}'.format(i, retmsg1, retmsg2))
+            except Exception as e:
+                logging.error('Exp {0} : {1}'.format(FuncName(), e))
+                return False
+        
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
