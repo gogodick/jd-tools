@@ -99,14 +99,13 @@ class JDSign(JDWrapper):
                 resp = self.sess.get(sign_url)
                 if resp.status_code != requests.codes.OK:
                     logging.error('Failed to get {}'.format(sign_url))
-                    return False
                 pattern = re.compile(r'"everyday-area J_everyday_area (?P<award>.*?)"')
                 res = pattern.search(resp.text)
                 if res == None:
-                    logging.warning(u'没有找到award');
-                    return False
-                award = res.group('award')
-                logging.warning(u'领取结果：{}'.format(award))
+                    logging.warning(u'{}没有找到award'.format(sign_url))
+                else:
+                    award = res.group('award')
+                    logging.warning(u'领取结果：{}'.format(award))
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
         logging.info(u'签到京东店铺')
