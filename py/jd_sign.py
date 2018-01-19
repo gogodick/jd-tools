@@ -609,6 +609,18 @@ class JDSign(JDWrapper):
                         logging.info(u'{}号: {}, outcome {}'.format(i, retmsg[0], outcome[0]))
                 else:
                     logging.info(u'{}号: {}'.format(i, retmsg[0]))
+            except Exception as e:
+                logging.error('Exp {0} : {1}'.format(FuncName(), e))
+                return False
+        for i in range(1,10,1):
+            box_data = {
+                'boxindex': str(i),
+                'g_tk': g_tk,
+            }
+            data = {
+                'g_tk': g_tk,
+            }
+            try:
                 resp = self.sess.get(in_url, params=box_data)
                 retmsg = self.find_key_str(resp.text, "retmsg")
                 if len(retmsg) == 0:
