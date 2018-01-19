@@ -25,6 +25,18 @@ class JDSign(JDWrapper):
     '''
     This class is used to sign
     '''
+    def find_key_str(self, text, key):
+        str = u'"{}":"(?P<value>.*?)"'.format(key)
+        pattern = re.compile(str)
+        res = pattern.findall(text)
+        return res
+    
+    def find_key_num(self, text, key):
+        str = u'"{}":(?P<value>\d+?)'.format(key)
+        pattern = re.compile(str)
+        res = pattern.findall(text)
+        return res
+
     def pc_sign_vip(self):
         index_url = 'https://vip.jd.com'
         sign_url = 'https://vip.jd.com/common/signin.html'
@@ -541,9 +553,8 @@ class JDSign(JDWrapper):
             return False
         try:
             resp = self.sess.get(index_url)
-            pattern = re.compile(r'"beanid":"(?P<beanid>.*?)"')
-            res = pattern.findall(resp.text)
-            if res == None:
+            res = self.find_key_str(resp.text, "beanid")
+            if len(res) == 0:
                 logging.warning(u'没有找到beanid');
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
@@ -554,14 +565,22 @@ class JDSign(JDWrapper):
                     'g_tk': g_tk,
                 }
                 resp = self.sess.get(sp_url, params=data)
-                print resp.text
-                pattern = re.compile(r'"retmsg":"(?P<retmsg>.*?)"')
-                res = pattern.search(resp.text)
-                if res == None:
-                    logging.warning(u'没有找到retmsg');
-                    return False
-                retmsg = res.group('retmsg')
-                logging.info('周末活动{}: {}'.format(act, retmsg))
+                ret = self.find_key_num(resp.text, "ret")
+                if len(ret) == 0:
+                    logging.warning(u'{},没有ret'.format(resp.text));
+                    continue
+                retmsg = self.find_key_str(resp.text, "retmsg")
+                if len(retmsg) == 0:
+                    logging.warning(u'{},没有retmsg'.format(resp.text));
+                    continue
+                if ret[0] == 0:
+                    beansnumber = self.find_key_num(resp.text, "beansnumber")
+                    if len(beansnumber) == 0:
+                        logging.warning(u'{},没有beansnumber'.format(resp.text));
+                    else:
+                        logging.info(u'周末活动{}: {}, bean {}'.format(act, retmsg[0], beansnumber[0]))
+                else:
+                    logging.info(u'周末活动{}: {}'.format(act, retmsg[0]))
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
         for i in range(1,10,1):
@@ -573,22 +592,29 @@ class JDSign(JDWrapper):
                 'g_tk': g_tk,
             }
             try:
-                pattern = re.compile(r'"retmsg":"(?P<retmsg>.*)"')
                 resp = self.sess.get(out_url, params=box_data)
-                print resp.text
-                res = pattern.search(resp.text)
-                if res == None:
-                    logging.warning(u'没有找到retmsg');
-                    return False
-                retmsg1 = res.group('retmsg')
+                ret = self.find_key_num(resp.text, "ret")
+                if len(ret) == 0:
+                    logging.warning(u'{},没有ret'.format(resp.text));
+                    continue
+                retmsg = self.find_key_str(resp.text, "retmsg")
+                if len(retmsg) == 0:
+                    logging.warning(u'{},没有retmsg'.format(resp.text));
+                    continue
+                if ret[0] == 0:
+                    outcome = self.find_key_num(resp.text, "outcome")
+                    if len(outcome) == 0:
+                        logging.warning(u'{},没有outcome'.format(resp.text));
+                    else:
+                        logging.info(u'{}号: {}, outcome {}'.format(i, retmsg[0], outcome[0]))
+                else:
+                    logging.info(u'{}号: {}'.format(i, retmsg[0]))
                 resp = self.sess.get(in_url, params=box_data)
-                print resp.text
-                res = pattern.search(resp.text)
-                if res == None:
-                    logging.warning(u'没有找到retmsg');
-                    return False
-                retmsg2 = res.group('retmsg')    
-                logging.info('{}号: {}, {}'.format(i, retmsg1, retmsg2))
+                retmsg = self.find_key_str(resp.text, "retmsg")
+                if len(retmsg) == 0:
+                    logging.warning(u'{},没有retmsg'.format(resp.text));
+                    continue
+                logging.info(u'{}号: {}'.format(i, retmsg[0]))
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
                 return False
