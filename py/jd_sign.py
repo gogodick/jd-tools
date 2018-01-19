@@ -489,6 +489,7 @@ class JDSign(JDWrapper):
     def mobile_sign_beangame(self):
         sign_url = 'https://wq.jd.com/mlogin/mpage/Login?rurl=http%3A%2F%2Fwqs.jd.com%2Fmy%2Findexv2.shtml%3Fshownav%3D1%26ptag%3D137652.25.3'
         token_url = 'https://wq.jd.com/active/getfunction'
+        index_url = 'https://wqs.jd.com/promote/201711/beangame/index.html'
         sp_url = 'https://wq.jd.com/activepersistent/jdbeans/welfaredrawv2'
         out_url = 'https://wq.jd.com/activepersistent/jdbeans/outboxv2'
         in_url = 'https://wq.jd.com/activepersistent/jdbeans/inboxv2'
@@ -539,20 +540,30 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
         try:
-            data = {
-                'active': 'JD_shangyecang18',
-                'g_tk': g_tk,
-            }
-            resp = self.sess.get(sp_url, params=data)
-            pattern = re.compile(r'"retmsg":"(?P<retmsg>.*?)"')
-            res = pattern.search(resp.text)
+            resp = self.sess.get(index_url)
+            pattern = re.compile(r'"beanid":"(?P<beanid>.*?)"')
+            res = pattern.findall(resp.text)
             if res == None:
-                logging.warning(u'没有找到retmsg');
-                return False
-            retmsg = res.group('retmsg')
-            logging.info('0号: {}'.format(retmsg))
+                logging.warning(u'没有找到beanid');
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
+        for act in res:
+            try:
+                data = {
+                    'active': act,
+                    'g_tk': g_tk,
+                }
+                resp = self.sess.get(sp_url, params=data)
+                print resp.text
+                pattern = re.compile(r'"retmsg":"(?P<retmsg>.*?)"')
+                res = pattern.search(resp.text)
+                if res == None:
+                    logging.warning(u'没有找到retmsg');
+                    return False
+                retmsg = res.group('retmsg')
+                logging.info('周末活动{}: {}'.format(act, retmsg))
+            except Exception as e:
+                logging.error('Exp {0} : {1}'.format(FuncName(), e))
         for i in range(1,10,1):
             box_data = {
                 'boxindex': str(i),
@@ -581,7 +592,6 @@ class JDSign(JDWrapper):
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
                 return False
-        
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
