@@ -377,7 +377,7 @@ class JDSign(JDWrapper):
             return False
 
     def mobile_sign_shake(self):
-        sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/shake/shake2award.action'
+        sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/shake0801/shake2award.action'
         logging.info(u'签到京东摇一摇')
         try:
             sid = ''
@@ -540,7 +540,7 @@ class JDSign(JDWrapper):
             return False
         try:
             data = {
-                'active': 'JD_shangyecang14',
+                'active': 'JD_shangyecang18',
                 'g_tk': g_tk,
             }
             resp = self.sess.get(sp_url, params=data)
@@ -554,19 +554,24 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
         for i in range(1,10,1):
-            data = {
+            box_data = {
                 'boxindex': str(i),
+                'g_tk': g_tk,
+            }
+            data = {
                 'g_tk': g_tk,
             }
             try:
                 pattern = re.compile(r'"retmsg":"(?P<retmsg>.*)"')
-                resp = self.sess.get(out_url, params=data)
+                resp = self.sess.get(out_url, params=box_data)
+                print resp.text
                 res = pattern.search(resp.text)
                 if res == None:
                     logging.warning(u'没有找到retmsg');
                     return False
                 retmsg1 = res.group('retmsg')
-                resp = self.sess.get(in_url, params=data)
+                resp = self.sess.get(in_url, params=box_data)
+                print resp.text
                 res = pattern.search(resp.text)
                 if res == None:
                     logging.warning(u'没有找到retmsg');
