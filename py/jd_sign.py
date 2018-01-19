@@ -32,7 +32,7 @@ class JDSign(JDWrapper):
         return res
     
     def find_key_num(self, text, key):
-        str = u'"{}":(?P<value>\d+?)'.format(key)
+        str = u'"{}":(?P<value>\d+)'.format(key)
         pattern = re.compile(str)
         res = pattern.findall(text)
         return res
@@ -580,15 +580,12 @@ class JDSign(JDWrapper):
                     else:
                         logging.info(u'周末活动{}: {}, bean {}'.format(act, retmsg[0], beansnumber[0]))
                 else:
-                    logging.info(u'周末活动{}: {}'.format(act, retmsg[0]))
+                    logging.info(u'周末活动{}: {}, ret {}'.format(act, retmsg[0], ret[0]))
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
         for i in range(1,10,1):
             box_data = {
                 'boxindex': str(i),
-                'g_tk': g_tk,
-            }
-            data = {
                 'g_tk': g_tk,
             }
             try:
@@ -608,7 +605,7 @@ class JDSign(JDWrapper):
                     else:
                         logging.info(u'{}号: {}, outcome {}'.format(i, retmsg[0], outcome[0]))
                 else:
-                    logging.info(u'{}号: {}'.format(i, retmsg[0]))
+                    logging.info(u'{}号: {}, ret {}'.format(i, retmsg[0], ret[0]))
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
                 return False
@@ -617,16 +614,17 @@ class JDSign(JDWrapper):
                 'boxindex': str(i),
                 'g_tk': g_tk,
             }
-            data = {
-                'g_tk': g_tk,
-            }
             try:
                 resp = self.sess.get(in_url, params=box_data)
+                ret = self.find_key_num(resp.text, "ret")
+                if len(ret) == 0:
+                    logging.warning(u'{},没有ret'.format(resp.text));
+                    continue
                 retmsg = self.find_key_str(resp.text, "retmsg")
                 if len(retmsg) == 0:
                     logging.warning(u'{},没有retmsg'.format(resp.text));
                     continue
-                logging.info(u'{}号: {}'.format(i, retmsg[0]))
+                logging.info(u'{}号: {}, ret {}'.format(i, retmsg[0], ret[0]))
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
                 return False
