@@ -567,20 +567,17 @@ class JDSign(JDWrapper):
                 resp = self.sess.get(sp_url, params=data)
                 ret = self.find_key_num(resp.text, "ret")
                 if len(ret) == 0:
-                    logging.warning(u'{},没有ret'.format(resp.text));
+                    logging.warning(u'{},没有ret'.format(resp.text))
                     continue
                 retmsg = self.find_key_str(resp.text, "retmsg")
                 if len(retmsg) == 0:
-                    logging.warning(u'{},没有retmsg'.format(resp.text));
+                    logging.warning(u'{},没有retmsg'.format(resp.text))
                     continue
-                if ret[0] == 0:
-                    beansnumber = self.find_key_num(resp.text, "beansnumber")
-                    if len(beansnumber) == 0:
-                        logging.warning(u'{},没有beansnumber'.format(resp.text));
-                    else:
-                        logging.info(u'周末活动{}: {}, bean {}'.format(act, retmsg[0], beansnumber[0]))
-                else:
-                    logging.info(u'周末活动{}: {}, ret {}'.format(act, retmsg[0], ret[0]))
+                beansnumber = self.find_key_num(resp.text, "beansnumber")
+                if len(beansnumber) == 0:
+                    logging.warning(u'{},没有beansnumber'.format(resp.text))
+                    continue
+                logging.info(u'周末活动{}: {}, ret {}, bean {}'.format(act, retmsg[0], ret[0], beansnumber[0]))
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
         for i in range(1,10,1):
@@ -592,20 +589,17 @@ class JDSign(JDWrapper):
                 resp = self.sess.get(out_url, params=box_data)
                 ret = self.find_key_num(resp.text, "ret")
                 if len(ret) == 0:
-                    logging.warning(u'{},没有ret'.format(resp.text));
+                    logging.warning(u'{},没有ret'.format(resp.text))
                     continue
                 retmsg = self.find_key_str(resp.text, "retmsg")
                 if len(retmsg) == 0:
-                    logging.warning(u'{},没有retmsg'.format(resp.text));
+                    logging.warning(u'{},没有retmsg'.format(resp.text))
                     continue
-                if ret[0] == 0:
-                    outcome = self.find_key_num(resp.text, "outcome")
-                    if len(outcome) == 0:
-                        logging.warning(u'{},没有outcome'.format(resp.text));
-                    else:
-                        logging.info(u'{}号: {}, outcome {}'.format(i, retmsg[0], outcome[0]))
-                else:
-                    logging.info(u'{}号: {}, ret {}'.format(i, retmsg[0], ret[0]))
+                outcome = self.find_key_num(resp.text, "outcome")
+                if len(outcome) == 0:
+                    logging.warning(u'{},没有outcome'.format(resp.text))
+                    continue
+                logging.info(u'{}号: {}, ret {}, outcome {}'.format(i, retmsg[0], ret[0], outcome[0]))
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
                 return False
