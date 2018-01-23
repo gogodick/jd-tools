@@ -623,22 +623,6 @@ class JDSign(JDWrapper):
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
                 return False
 
-    def mobile_sign_test(self):
-        sign_url = 'https://api.m.jd.com/client.action?functionId=activitySign&clientVersion=6.6.2&build=55835&client=android&uuid=357755070126840-e458b88e8e4c&st=1516413221238&sign=b56695a3cdc765d06177743328e39126&sv=100&body={"signId":"QV5ZTfw2rgtgGpuj1Pv8aykkPsL"}'
-        logging.info(u'签到京东下拉')
-        try:
-            resp = self.sess.get(sign_url)
-            resp_json = resp.json()
-            if 'returnMsg' not in resp_json or 'beanCount' not in resp_json:
-                logging.warning(u'{} 无法识别'.format(resp.text))
-            else:
-                returnMsg = resp_json['returnMsg']
-                beanCount = resp_json['beanCount']             
-                logging.info(u'签到结果: {}, bean {}'.format(returnMsg, beanCount))
-        except Exception as e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
