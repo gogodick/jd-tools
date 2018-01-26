@@ -27,7 +27,7 @@ class JDCoupon(JDWrapper):
     '''
     wait_interval = 1
     wait_delay = 30
-    duration = 5
+    duration = 2
     start_limit = 1
     coupon_url = ""
     def setup(self, key, role_id):
