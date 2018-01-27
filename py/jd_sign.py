@@ -194,6 +194,31 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_jr(self):
+        sign_url = 'http://home.jdpay.com/my/signIn/'
+        logging.info(u'签到京东金融')
+        try:
+            sid = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'sid':
+                    sid = ck.value
+                    break
+            data = {
+                'sid': sid,
+            }
+            response = self.sess.get(sign_url, params=data)
+            resp_json = response.json()
+            if 'data' in resp_json:
+                if 'resBusiData' in resp_json['data']:
+                    logging.info('签到成功: {}'.format(resp_json['data']['resBusiData']))
+                else:
+                    logging.info('签到结果: {}'.format(resp_json['data']['resBusiMsg']))
+            else:
+                logging.info('无法识别: {}'.format(resp_json))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
     def mobile_sign_month(self):
         sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/appdownload/lottery.action'
         logging.info(u'签到10月每天领京豆')
@@ -464,7 +489,7 @@ class JDSign(JDWrapper):
             return False
 
     def mobile_sign_draw(self):
-        sign_url = 'https://wq.jd.com/activepersistent/muserwelfare/draw?active=Mjiugongge&type=2'
+        sign_url = 'https://s.m.jd.com/activemcenter/muserwelfare/draw?active=Mjiugongge&type=2'
         logging.info(u'签到京东每日抽奖')
         try:
             headers = {'Referer': 'https://wqs.jd.com/promote/201712/mwelfare/m.html?sceneval=2&logintag='}
