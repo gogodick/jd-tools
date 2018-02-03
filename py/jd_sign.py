@@ -618,6 +618,23 @@ class JDSign(JDWrapper):
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
                 return False
 
+    def mobile_sign_year(self):
+        sign_url = 'http://jshopscene.jd.com/view/sign/signin?uuid=63ebcf3e-b479-4182-aad6-05f051d9b0b2'
+        logging.info(u'签到京东年货节')
+        try:
+            resp = self.sess.get(sign_url)
+            resp_json = resp.json()
+            if "result" in resp_json:
+                if resp_json["result"] == False:
+                    logging.warning(u'签到失败: {}, {}'.format(resp_json["message"], resp_json["result"]))
+                if "prize_result" in resp_json:
+                    logging.info(u'签到结果: {}, {}'.format(resp_json["prize_result"]["basicPrize"]["prizeName"], resp_json["prize_result"]["extendPrize"]["message"]))
+            else:
+                logging.warning(u'{},没有result'.format(resp_json));
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
