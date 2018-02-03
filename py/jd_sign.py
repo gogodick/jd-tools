@@ -93,35 +93,6 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def pc_sign_shop(self):
-        shop_list = [
-                 'https://mall.jd.com/shopSign-1000081124.html',
-                 'https://mall.jd.com/shopSign-1000092704.html',
-                 'https://mall.jd.com/shopSign-146935.html',
-                 'https://mall.jd.com/shopSign-22705.html',
-                 'https://mall.jd.com/shopSign-199094.html',
-                 'https://mall.jd.com/shopSign-77222.html',
-                 'https://mall.jd.com/shopSign-86174.html',
-                 'https://mall.jd.com/shopSign-1000001582.html',
-                 'https://mall.jd.com/shopSign-1000003179.html',
-                 'https://mall.jd.com/shopSign-1000000725.html'
-        ]
-        for sign_url in shop_list:
-            try:
-                resp = self.sess.get(sign_url)
-                if resp.status_code != requests.codes.OK:
-                    logging.error('Failed to get {}'.format(sign_url))
-                pattern = re.compile(r'"everyday-area J_everyday_area (?P<award>.*?)"')
-                res = pattern.search(resp.text)
-                if res == None:
-                    logging.warning(u'{}没有找到award'.format(sign_url))
-                else:
-                    award = res.group('award')
-                    logging.warning(u'领取结果：{}'.format(award))
-            except Exception as e:
-                logging.error('Exp {0} : {1}'.format(FuncName(), e))
-        logging.info(u'签到京东店铺')
-
     def pick_poker(self):
         try:
             poker_url = 'http://api.m.jd.com/client.action?functionId=getCardResult&client=ld&clientVersion=1.0.0&body={"index":'

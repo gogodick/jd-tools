@@ -171,7 +171,7 @@ class JDCrawler(object):
     
 if __name__ == '__main__':
     # help message
-    parser = argparse.ArgumentParser(description='Simulate to login Jing Dong, and click coupon')
+    parser = argparse.ArgumentParser(description='Simulate to login Jing Dong, and search coupon')
     parser.add_argument('-d', '--depth', 
                         type=int, help='depth limit', default=1)
     parser.add_argument('-p', '--process', 
