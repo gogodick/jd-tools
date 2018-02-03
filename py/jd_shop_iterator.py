@@ -49,6 +49,7 @@ class JDShop(JDWrapper):
                     result.append(sign_url)
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
+        logging.warning(u'task {}: progress 100%'.format(id))
         return result
 
     def search_shop_b(self, id, start, stop):
@@ -72,6 +73,7 @@ class JDShop(JDWrapper):
                     result.append(sign_url)
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
+        logging.warning(u'task {}: progress 100%'.format(id))
         return result
 
 def shop_task(id, start, stop):    
