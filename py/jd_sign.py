@@ -426,14 +426,13 @@ class JDSign(JDWrapper):
         sign_url = 'http://lottery.jd.com/award/lottery?actKey=a2Ybe2'
         logging.info(u'签到京东抽奖')
         try:
-            for i in range(3):
+            for i in range(1):
                 response = self.sess.get(sign_url)
                 resp_json = response.json()
                 if 'data' in resp_json:
                     logging.info('领取结果: {} {}'.format(resp_json['msg'], resp_json['data']['awardName']))
                 else:
                     logging.info('领取结果: {}'.format(resp_json['msg']))
-                time.sleep(1)
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
