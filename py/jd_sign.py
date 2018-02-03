@@ -47,17 +47,20 @@ class JDSign(JDWrapper):
             pattern = re.compile(r'token: "(?P<token>\d+)"')
             res = pattern.search(html)
             if res == None:
-                logging.warning(u'没有找到token');
+                logging.warning(u'没有找到token')
                 return False
             if len(res.group('token')) == 0:
-                logging.warning(u'没有找到token');
+                logging.warning(u'没有找到token')
                 return False
             payload = {'token': res.group('token')}
             response = self.sess.get(sign_url, params=payload).json()
             if response['success']:
                 # 签到成功, 获得若干个京豆
-                beans_get = response['result']['jdnum']
-                logging.info(u'签到成功, 获得 {} 个京豆.'.format(beans_get))
+                if 'jdnum' in response['result']:
+                    beans_get = response['result']['jdnum']
+                    logging.info(u'签到成功, 获得 {} 个京豆.'.format(beans_get))
+                else:
+                    logging.warning(u'{}'.format(response))
                 return True
             else:
                 # 例如: 您已签到过，请勿重复签到！
@@ -619,9 +622,11 @@ class JDSign(JDWrapper):
                 return False
 
     def mobile_sign_year(self):
+        index_url = 'http://jshopscene.jd.com/view/sign/getSignInDetailAndRule?uuid=63ebcf3e-b479-4182-aad6-05f051d9b0b2'
         sign_url = 'http://jshopscene.jd.com/view/sign/signin?uuid=63ebcf3e-b479-4182-aad6-05f051d9b0b2'
         logging.info(u'签到京东年货节')
         try:
+            resp = self.sess.get(index_url)
             resp = self.sess.get(sign_url)
             resp_json = resp.json()
             if "result" in resp_json:
