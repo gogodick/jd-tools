@@ -27,6 +27,7 @@ class JDSign(JDWrapper):
     '''
     def sign_shop(self, filename):
         shop_list = []
+        uf_url = 'http://t.jd.com/follow/vender/unfollow.do?venderId='
         logging.info(u'签到京东店铺')
         file = open(filename)
         for line in file:
@@ -45,6 +46,14 @@ class JDSign(JDWrapper):
                     logging.warning(u'领取结果：{}'.format(award))
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            pattern = re.compile(r'(?P<shop>\d+)')
+            res = pattern.search(sign_url)
+            if res != None:
+                url  = uf_url + res.group('shop')
+                try:
+                    self.sess.get(url)
+                except Exception as e:
+                    logging.error('Exp {0} : {1}'.format(FuncName(), e))
 
 if __name__ == '__main__':
     # help message
