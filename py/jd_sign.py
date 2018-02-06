@@ -633,7 +633,7 @@ class JDSign(JDWrapper):
                 if resp_json["result"] == False:
                     logging.warning(u'签到失败: {}, {}'.format(resp_json["message"], resp_json["result"]))
                 if "prize_result" in resp_json:
-                    logging.info(u'签到结果: {}, {}'.format(resp_json["prize_result"]["basicPrize"]["prizeName"], resp_json["prize_result"]["extendPrize"]["message"]))
+                    logging.info(u'签到结果: {}, {}'.format(resp_json["prize_result"]["basicPrize"]["prizeName"], resp_json["prize_result"]["extendPrize"]["prizeName"]))
             else:
                 logging.warning(u'{},没有result'.format(resp_json));
         except Exception as e:
