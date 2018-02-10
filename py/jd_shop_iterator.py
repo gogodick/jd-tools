@@ -28,6 +28,7 @@ class JDShop(JDWrapper):
     '''
     pst = 10
     def search_shop_a(self, id, start, stop):
+        uf_url = 'http://t.jd.com/follow/vender/unfollow.do?venderId='
         result = []
         progress = 0
         for i in range(start, stop):
@@ -49,10 +50,16 @@ class JDShop(JDWrapper):
                     result.append(sign_url)
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            url  = uf_url + str(x)
+            try:
+                self.sess.get(url)
+            except Exception as e:
+                logging.error('Exp {0} : {1}'.format(FuncName(), e))
         logging.warning(u'task {}: progress 100%'.format(id))
         return result
 
     def search_shop_b(self, id, start, stop):
+        uf_url = 'http://t.jd.com/follow/vender/unfollow.do?venderId='
         result = []
         progress = 0
         for i in range(start, stop):
@@ -71,6 +78,11 @@ class JDShop(JDWrapper):
                     award = res.group('award')
                     logging.warning(u'shop {}: {}'.format(i, award))
                     result.append(sign_url)
+            except Exception as e:
+                logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            url  = uf_url + str(i)
+            try:
+                self.sess.get(url)
             except Exception as e:
                 logging.error('Exp {0} : {1}'.format(FuncName(), e))
         logging.warning(u'task {}: progress 100%'.format(id))
