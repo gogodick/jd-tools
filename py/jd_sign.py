@@ -565,15 +565,15 @@ class JDSign(JDWrapper):
                 resp = self.sess.get(sp_url, params=data)
                 ret = self.find_key_num(resp.text, "ret")
                 if len(ret) == 0:
-                    logging.warning(u'{},没有ret'.format(resp.text))
+                    logging.warning(u'没有ret')
                     continue
                 retmsg = self.find_key_str(resp.text, "retmsg")
                 if len(retmsg) == 0:
-                    logging.warning(u'{},没有retmsg'.format(resp.text))
+                    logging.warning(u'没有retmsg')
                     continue
                 beansnumber = self.find_key_num(resp.text, "beansnumber")
                 if len(beansnumber) == 0:
-                    logging.warning(u'{},没有beansnumber'.format(resp.text))
+                    logging.warning(u'{},没有beansnumber'.format(resp.text[:20]))
                     continue
                 logging.info(u'周末活动{}: {}, ret {}, bean {}'.format(act, retmsg[0], ret[0], beansnumber[0]))
             except Exception as e:
@@ -587,15 +587,15 @@ class JDSign(JDWrapper):
                 resp = self.sess.get(out_url, params=box_data)
                 ret = self.find_key_num(resp.text, "ret")
                 if len(ret) == 0:
-                    logging.warning(u'{},没有ret'.format(resp.text))
+                    logging.warning(u'没有ret')
                     continue
                 retmsg = self.find_key_str(resp.text, "retmsg")
                 if len(retmsg) == 0:
-                    logging.warning(u'{},没有retmsg'.format(resp.text))
+                    logging.warning(u'没有retmsg')
                     continue
                 outcome = self.find_key_num(resp.text, "outcome")
                 if len(outcome) == 0:
-                    logging.warning(u'{},没有outcome'.format(resp.text))
+                    logging.warning(u'没有outcome')
                     continue
                 logging.info(u'{}号: {}, ret {}, outcome {}'.format(i, retmsg[0], ret[0], outcome[0]))
             except Exception as e:
@@ -610,11 +610,11 @@ class JDSign(JDWrapper):
                 resp = self.sess.get(in_url, params=box_data)
                 ret = self.find_key_num(resp.text, "ret")
                 if len(ret) == 0:
-                    logging.warning(u'{},没有ret'.format(resp.text));
+                    logging.warning(u'没有ret')
                     continue
                 retmsg = self.find_key_str(resp.text, "retmsg")
                 if len(retmsg) == 0:
-                    logging.warning(u'{},没有retmsg'.format(resp.text));
+                    logging.warning(u'没有retmsg')
                     continue
                 logging.info(u'{}号: {}, ret {}'.format(i, retmsg[0], ret[0]))
             except Exception as e:
