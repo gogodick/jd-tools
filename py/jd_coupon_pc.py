@@ -13,9 +13,6 @@ import math
 import logging, logging.handlers
 import argparse
 import multiprocessing
-import socket
-import gzip
-import StringIO
 import re
 from jd_wrapper import JDWrapper
 import sys
