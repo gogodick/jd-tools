@@ -13,6 +13,10 @@ import math
 import logging, logging.handlers
 import argparse
 import multiprocessing
+import socket
+import gzip
+import StringIO
+import re
 from jd_wrapper import JDWrapper
 import sys
 reload(sys)
@@ -47,6 +51,37 @@ class JDCoupon(JDWrapper):
                     self.coupon_url = test_url
                     return True
         return False
+
+    def my_click(self, level=None):
+        try:
+            res = self.socket_get(self.coupon_url)
+            if res == None:
+                logging.log(logging.ERROR, u'Can not get page')
+                return
+            if level != None:
+                soup = bs4.BeautifulSoup(res, "html.parser")
+                tag1 = soup.select('title')
+                tag2 = soup.select('div.content')
+                if len(tag2):
+                    logging.log(level, u'{}'.format(tag2[0].text.strip(' \t\r\n')))
+                else:
+                    if len(tag1):
+                        logging.log(level, u'{}'.format(tag1[0].text.strip(' \t\r\n')))
+                    else:
+                        logging.log(level, u'页面错误')
+        except Exception, e:
+            if level != None:
+                logging.log(level, 'Exp {0} : {1}'.format(FuncName(), e))
+            return 0
+        else:
+            return 1
+
+    def my_click_fast(self, count):
+        try:
+            return [self.socket_get_fast(self.coupon_url) for i in range(count)]
+        except Exception, e:
+            return []
+
     def click(self, level=None):
         try:
             resp = self.sess.get(self.coupon_url, timeout=5)
@@ -79,7 +114,8 @@ class JDCoupon(JDWrapper):
         self.set_local_time()
         while 1:
             if counter >= self.wait_delay:
-                self.click(logging.INFO)
+                #self.click(logging.INFO)
+                self.my_click(logging.INFO)
                 counter = 0
             diff = self.compare_local_time(target)
             if (diff <= 60) and (diff >= -60):
@@ -94,6 +130,25 @@ class JDCoupon(JDWrapper):
             if (diff <= self.start_limit):
                 break;
 
+def my_click_task(coupon_url, id):    
+    cnt = 0
+    jd = JDCoupon()
+    logging.warning(u'进程{}:开始运行'.format(id+1))
+    if not jd.load_cookie(jd.pc_cookie_file):
+        logging.warning(u'进程{}:无法加载cookie'.format(id+1))
+        return 0
+    jd.coupon_url = coupon_url
+    while(wait_flag.value != 0):
+        pass
+    result = []
+    while(run_flag.value != 0):
+        result += jd.my_click_fast(8)
+    for res in result:
+        if res:
+            cnt += 1
+    jd.my_click(logging.WARNING)
+    return cnt
+
 def click_task(coupon_url, id):    
     cnt = 0
     jd = JDCoupon()
@@ -107,10 +162,10 @@ def click_task(coupon_url, id):
     result = []
     while(run_flag.value != 0):
         result += jd.click_fast(8)
-    jd.click(logging.WARNING)
     for resp in result:
         if resp.ok:
             cnt += 1
+    jd.click(logging.WARNING)
     return cnt
 
 if __name__ == '__main__':
@@ -155,7 +210,7 @@ if __name__ == '__main__':
     wait_flag.value = 1
     run_flag.value = 1
     for i in range(options.process):
-        result.append(pool.apply_async(click_task, args=(jd.coupon_url, i,)))
+        result.append(pool.apply_async(my_click_task, args=(jd.coupon_url, i,)))
     jd.busy_wait(target)
     wait_flag.value = 0
     run_time = jd.duration

@@ -12,6 +12,9 @@ import requests
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 import cookielib
+import socket
+import gzip
+import StringIO
 import os
 import time
 import re
@@ -38,7 +41,6 @@ class JDWrapper(object):
     def __init__(self):
         self.sess = requests.Session()
         self.sess.verify = False
-
         self.headers = {
             'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
             'ContentType': 'text/html; charset=utf-8',
@@ -46,10 +48,7 @@ class JDWrapper(object):
             'Accept-Language':'zh-CN,zh;q=0.8',
             'Connection' : 'keep-alive',
         }
-        
-        self.cookies = {
-
-        }
+        self.cookies = {}
 
     def dump_json(self, json_object):
         '''
@@ -465,7 +464,7 @@ class JDWrapper(object):
             return False
 
     def mobile_login(self):
-	self.sess.cookies.clear()
+        self.sess.cookies.clear()
         if self.load_cookie(self.mobile_cookie_file):
             if self.mobile_verify_login():
                 return True
@@ -474,6 +473,57 @@ class JDWrapper(object):
             return False
         self.save_cookie(self.mobile_cookie_file)
         return True
+
+    def socket_get_core(self, url, se):
+        pattern = re.compile(r'://(?P<host>.*?)(?P<page>/.*)')
+        res = pattern.search(url)
+        if res == None:
+            logging.error("Wrong URL {}".fomart(url))
+            return False
+        host = res.group('host')
+        page = res.group('page')
+        cookies = self.sess.cookies
+        my_text = "GET " 
+        my_text += page
+        my_text += " HTTP/1.1\r\nHost: "
+        my_text += host
+        my_text += "\r\nConnection: keep-alive\r\nAccept-Encoding: gzip, deflate\r\nAccept: */*\r\nUser-Agent: python-requests/2.13.0\r\nCookie: "
+        for ck in cookies:
+            if ck.domain in host:
+                my_text += "{}={}; ".format(ck.name, ck.value)
+        my_text = my_text[:-2]
+        my_text += "\r\n\r\n"
+        se.connect((host,80)) 
+        se.send(my_text)
+        return True
+
+    def socket_get(self, url):
+        se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        res = self.socket_get_core(url, se)
+        if False == res:
+            return None
+        buffer = []  
+        while True:  
+            d = se.recv(1024)  
+            if d:  
+                buffer.append(d)  
+            else:  
+                break  
+        data = ''.join(buffer)  
+        se.close()
+        header,html = data.split('\r\n\r\n',1)
+        if (header.find("200 OK")) == -1:
+            return html
+        test = html.split('\r\n')
+        buf = StringIO.StringIO(test[1])
+        f = gzip.GzipFile(fileobj=buf)
+        return f.read()
+
+    def socket_get_fast(self, url):
+        se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        res = self.socket_get_core(url, se)
+        se.close
+        return res
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')
