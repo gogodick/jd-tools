@@ -536,6 +536,7 @@ class JDWrapper(object):
         se.connect((ip,80)) 
         se.send(text)
         text = self.socket_read(se)
+        se.shutdown(socket.SHUT_RDWR)
         se.close()
         return text
 
@@ -556,7 +557,8 @@ class JDWrapper(object):
                     ret = se.send(text)
                     if ret == len(text):
                         good += 1
-                    se.close
+                    se.shutdown(socket.SHUT_RDWR)
+                    se.close()
                 except Exception, e:
                     print('Exp {0} : {1}'.format(FuncName(), e))
         if good > 0:
@@ -588,7 +590,8 @@ class JDWrapper(object):
                     ret = se.send(text)
                     if ret == len(text):
                         good += 1
-                    se.close
+                    se.shutdown(socket.SHUT_RDWR)
+                    se.close()
                 except Exception, e:
                     print('Exp {0} : {1}'.format(FuncName(), e))
         if good > 0:
