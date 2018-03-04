@@ -75,8 +75,9 @@ class JDCoupon(JDWrapper):
 
     def my_click_fast(self, count):
         try:
-            return [self.socket_get_fast(self.coupon_url) for i in range(count)]
+            return self.socket_get_fast_2(self.coupon_url, count)
         except Exception, e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return []
 
     def click(self, level=None):
@@ -127,7 +128,8 @@ class JDCoupon(JDWrapper):
             if (diff <= self.start_limit):
                 break;
 
-def my_click_task(coupon_url, id):    
+def my_click_task(coupon_url, id):
+    step = 8
     cnt = 0
     jd = JDCoupon()
     logging.warning(u'进程{}:开始运行'.format(id+1))
@@ -139,10 +141,10 @@ def my_click_task(coupon_url, id):
         pass
     result = []
     while(run_flag.value != 0):
-        result += jd.my_click_fast(8)
+        result += jd.my_click_fast(step)
     for res in result:
         if res:
-            cnt += 1
+            cnt += step
     jd.my_click(logging.WARNING)
     return cnt
 

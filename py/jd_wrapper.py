@@ -13,6 +13,7 @@ import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 import cookielib
 import socket
+import select
 import gzip
 import StringIO
 import os
@@ -474,12 +475,24 @@ class JDWrapper(object):
         self.save_cookie(self.mobile_cookie_file)
         return True
 
-    def socket_get_core(self, url, se):
+    def host_to_ip(self, host):
+        try:
+            family, socktype, proto, canonname, sockaddr = socket.getaddrinfo(
+                host, 0, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
+            if family == socket.AF_INET:
+                ip, port = sockaddr
+            elif family == socket.AF_INET6:
+                ip, port, flow_info, scope_id = sockaddr
+        except Exception:
+            ip = None
+        return ip
+
+    def url_to_request(self, url):
         pattern = re.compile(r'://(?P<host>.*?)(?P<page>/.*)')
         res = pattern.search(url)
         if res == None:
             logging.error("Wrong URL {}".fomart(url))
-            return False
+            return None, None
         host = res.group('host')
         page = res.group('page')
         cookies = self.sess.cookies
@@ -493,15 +506,10 @@ class JDWrapper(object):
                 my_text += "{}={}; ".format(ck.name, ck.value)
         my_text = my_text[:-2]
         my_text += "\r\n\r\n"
-        se.connect((host,80)) 
-        se.send(my_text)
-        return True
-
-    def socket_get(self, url):
-        se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        res = self.socket_get_core(url, se)
-        if False == res:
-            return None
+        ip = self.host_to_ip(host)
+        return ip, my_text
+    
+    def socket_read(self, se):
         buffer = []  
         while True:  
             d = se.recv(1024)  
@@ -510,7 +518,6 @@ class JDWrapper(object):
             else:  
                 break  
         data = ''.join(buffer)  
-        se.close()
         header,html = data.split('\r\n\r\n',1)
         if (header.find("200 OK")) == -1:
             text = html
@@ -521,11 +528,72 @@ class JDWrapper(object):
             text = f.read()
         return text
 
-    def socket_get_fast(self, url):
+    def socket_get(self, url):
         se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        res = self.socket_get_core(url, se)
-        se.close
-        return res
+        ip, text = self.url_to_request(self.coupon_url)
+        if None == ip:
+            return None
+        se.connect((ip,80)) 
+        se.send(text)
+        text = self.socket_read(se)
+        se.close()
+        return text
+
+    def socket_get_fast_1(self, url, count):
+        ip, text = self.url_to_request(self.coupon_url)
+        if None == ip:
+            print "socket_get_fast failed"
+            return []
+        sock_list = []
+        for i in range(count):
+            se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            err = se.connect_ex((ip,80))
+            sock_list.append(se)
+        good = 0
+        for se in sock_list:
+            if se.getsockname()[0] != '0.0.0.0':
+                try:
+                    ret = se.send(text)
+                    if ret == len(text):
+                        good += 1
+                    se.close
+                except Exception, e:
+                    print('Exp {0} : {1}'.format(FuncName(), e))
+        if good > 0:
+            return [True for i in range(good)]
+        return []
+
+    def socket_get_fast_2(self, url, count):
+        ip, text = self.url_to_request(self.coupon_url)
+        if None == ip:
+            print "socket_get_fast failed"
+            return []
+        sock_list = []
+        for i in range(count):
+            se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            se.setblocking(0)
+            err = se.connect_ex((ip,80))
+            sock_list.append(se)
+        while True:
+            readyInput,readyOutput,readyException = select.select([],sock_list,sock_list)
+            if len(readyOutput) == count:
+                break
+            if len(readyException) > 0:
+                break
+        good = 0
+        for se in readyOutput:
+            if se.getsockname()[0] != '0.0.0.0':
+                try:
+                    se.setblocking(1)
+                    ret = se.send(text)
+                    if ret == len(text):
+                        good += 1
+                    se.close
+                except Exception, e:
+                    print('Exp {0} : {1}'.format(FuncName(), e))
+        if good > 0:
+            return [True for i in range(good)]
+        return []
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')
