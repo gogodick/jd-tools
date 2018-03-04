@@ -513,11 +513,13 @@ class JDWrapper(object):
         se.close()
         header,html = data.split('\r\n\r\n',1)
         if (header.find("200 OK")) == -1:
-            return html
-        test = html.split('\r\n')
-        buf = StringIO.StringIO(test[1])
-        f = gzip.GzipFile(fileobj=buf)
-        return f.read()
+            text = html
+        else:
+            test = html.split('\r\n')
+            buf = StringIO.StringIO(test[1])
+            f = gzip.GzipFile(fileobj=buf)
+            text = f.read()
+        return text
 
     def socket_get_fast(self, url):
         se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
