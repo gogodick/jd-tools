@@ -16,6 +16,7 @@ import socket
 import select
 import gzip
 import StringIO
+import errno
 import os
 import time
 import re
@@ -25,6 +26,7 @@ import random
 import logging, logging.handlers
 import subprocess
 import platform
+import traceback
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -540,63 +542,78 @@ class JDWrapper(object):
         se.close()
         return text
 
-    def socket_get_fast_1(self, url, count):
-        ip, text = self.url_to_request(self.coupon_url)
-        if None == ip:
-            print "socket_get_fast failed"
-            return []
-        sock_list = []
+    def socket_prepare(self, ip, limit):
+        count = 1024
+        conn_dict = {}
+        send_dict = {}
+        poll = select.poll()
+        start = time.time()
         for i in range(count):
             se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-            err = se.connect_ex((ip,80))
-            sock_list.append(se)
-        good = 0
-        for se in sock_list:
-            if se.getsockname()[0] != '0.0.0.0':
-                try:
-                    ret = se.send(text)
-                    if ret == len(text):
-                        good += 1
-                    se.shutdown(socket.SHUT_RDWR)
-                    se.close()
-                except Exception, e:
-                    print('Exp {0} : {1}'.format(FuncName(), e))
-        if good > 0:
-            return [True for i in range(good)]
-        return []
-
-    def socket_get_fast_2(self, url, count):
-        ip, text = self.url_to_request(self.coupon_url)
-        if None == ip:
-            print "socket_get_fast failed"
-            return []
-        sock_list = []
-        for i in range(count):
-            se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            se.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             se.setblocking(0)
             err = se.connect_ex((ip,80))
-            sock_list.append(se)
+            poll.register(se.fileno(), select.POLLOUT)
+            conn_dict[se.fileno()] = se
         while True:
-            readyInput,readyOutput,readyException = select.select([],sock_list,sock_list)
-            if len(readyOutput) == count:
+            poll_list = poll.poll(10)
+            if len(poll_list) == 0:
+                count += 1
+                if count >= 10:
+                    break
+            else:
+                count = 0
+            for fd, event in poll_list:
+                if event & select.POLLOUT:
+                    poll.unregister(fd)
+                    se = conn_dict[fd]
+                    send_dict[fd] = se
+            stop = time.time()
+            if (stop - start) > limit:
                 break
-            if len(readyException) > 0:
-                break
+        return send_dict
+
+    def socket_run(self, send_dict, ip, text, limit):
+        poll = select.poll()
+        start = time.time()
+        for fd,se in send_dict.items():
+            se.send(text)
+            poll.register(fd, select.POLLIN | select.POLLHUP | select.POLLERR)
+        count = 0
         good = 0
-        for se in readyOutput:
-            if se.getsockname()[0] != '0.0.0.0':
-                try:
-                    se.setblocking(1)
-                    ret = se.send(text)
-                    if ret == len(text):
-                        good += 1
+        while True:
+            poll_list = poll.poll(10)
+            if len(poll_list) == 0:
+                count += 1
+                if count >= 10:
+                    break
+            else:
+                count = 0
+            for fd, event in poll_list:
+                if event & select.POLLOUT:
+                    poll.modify(fd, select.POLLIN | select.POLLHUP | select.POLLERR)
+                    se = send_dict[fd]
+                    se.send(text)
+                elif event & select.POLLIN | select.POLLHUP | select.POLLERR:
+                    poll.unregister(fd)
+                    se = send_dict[fd]
                     se.shutdown(socket.SHUT_RDWR)
                     se.close()
-                except Exception, e:
-                    print('Exp {0} : {1}'.format(FuncName(), e))
-        if good > 0:
-            return [True for i in range(good)]
-        return []
+                    del send_dict[fd]
+                    good += 1
+                    se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+                    se.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                    se.setblocking(0)
+                    err = se.connect_ex((ip,80))
+                    poll.register(se.fileno(), select.POLLOUT | select.POLLHUP | select.POLLERR)
+                    send_dict[se.fileno()] = se
+            stop = time.time()
+            if (stop - start) > limit:
+                break
+        for fd,se in send_dict.items():
+            se.shutdown(socket.SHUT_RDWR)
+            se.close()
+        return good
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')

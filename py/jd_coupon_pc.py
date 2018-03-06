@@ -73,13 +73,6 @@ class JDCoupon(JDWrapper):
         else:
             return 1
 
-    def my_click_fast(self, count):
-        try:
-            return self.socket_get_fast_2(self.coupon_url, count)
-        except Exception, e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return []
-
     def click(self, level=None):
         try:
             resp = self.sess.get(self.coupon_url, timeout=5)
@@ -127,26 +120,6 @@ class JDCoupon(JDWrapper):
             diff = self.compare_local_time(target)
             if (diff <= self.start_limit):
                 break;
-
-def my_click_task(coupon_url, id):
-    step = 8
-    cnt = 0
-    jd = JDCoupon()
-    logging.warning(u'进程{}:开始运行'.format(id+1))
-    if not jd.load_cookie(jd.pc_cookie_file):
-        logging.warning(u'进程{}:无法加载cookie'.format(id+1))
-        return 0
-    jd.coupon_url = coupon_url
-    while(wait_flag.value != 0):
-        pass
-    result = []
-    while(run_flag.value != 0):
-        result += jd.my_click_fast(step)
-    for res in result:
-        if res:
-            cnt += step
-    jd.my_click(logging.WARNING)
-    return cnt
 
 def click_task(coupon_url, id):    
     cnt = 0
@@ -196,30 +169,45 @@ if __name__ == '__main__':
         sys.exit(1)
     if not jd.setup(options.key, options.role_id):
         sys.exit(1)
-    jd.click(logging.WARNING)
-    target = (options.hour * 3600) + (options.minute * 60)
-    jd.relax_wait(target)
-    jd.click(logging.WARNING)
-    wait_flag = multiprocessing.Value('i', 0)
-    run_flag = multiprocessing.Value('i', 0)
-    pool = multiprocessing.Pool(processes=options.process+1)
-    result = []
-    h, m, s = jd.format_local_time()
-    logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
-    wait_flag.value = 1
-    run_flag.value = 1
-    for i in range(options.process):
-        result.append(pool.apply_async(my_click_task, args=(jd.coupon_url, i,)))
-    jd.busy_wait(target)
-    wait_flag.value = 0
-    run_time = jd.duration
-    time.sleep(run_time)
-    h, m, s = jd.format_local_time()
-    logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
-    run_flag.value = 0
-    pool.close()
-    pool.join()
-    cnt = 0
-    for res in result:
-        cnt += res.get()
-    logging.warning(u'运行{}秒，点击{}次'.format(run_time, cnt))
+    if options.process <= 1:
+        ip, text = jd.url_to_request(jd.coupon_url)
+        if None == ip:
+            logging.warning("socket_get_fast failed")
+        else:
+            target = (options.hour * 3600) + (options.minute * 60)
+            run_time = jd.duration
+            jd.relax_wait(target)
+            send_dict = jd.socket_prepare(ip, 10)
+            jd.busy_wait(target)
+            cnt = jd.socket_run(send_dict, ip, text, run_time)
+            h, m, s = jd.format_local_time()
+            logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
+            logging.warning(u'运行{}秒，点击{}次'.format(run_time, cnt))
+    else:
+        jd.click(logging.WARNING)
+        target = (options.hour * 3600) + (options.minute * 60)
+        jd.relax_wait(target)
+        jd.click(logging.WARNING)
+        wait_flag = multiprocessing.Value('i', 0)
+        run_flag = multiprocessing.Value('i', 0)
+        pool = multiprocessing.Pool(processes=options.process+1)
+        result = []
+        h, m, s = jd.format_local_time()
+        logging.warning(u'#开始时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
+        wait_flag.value = 1
+        run_flag.value = 1
+        for i in range(options.process):
+            result.append(pool.apply_async(click_task, args=(jd.coupon_url, i,)))
+        jd.busy_wait(target)
+        wait_flag.value = 0
+        run_time = jd.duration
+        time.sleep(run_time)
+        h, m, s = jd.format_local_time()
+        logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
+        run_flag.value = 0
+        pool.close()
+        pool.join()
+        cnt = 0
+        for res in result:
+            cnt += res.get()
+        logging.warning(u'运行{}秒，点击{}次'.format(run_time, cnt))
