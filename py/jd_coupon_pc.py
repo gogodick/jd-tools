@@ -183,6 +183,7 @@ if __name__ == '__main__':
             h, m, s = jd.format_local_time()
             logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
             logging.warning(u'运行{}秒，点击{}次'.format(run_time, cnt))
+            jd.my_click(logging.WARNING)
     else:
         jd.click(logging.WARNING)
         target = (options.hour * 3600) + (options.minute * 60)
