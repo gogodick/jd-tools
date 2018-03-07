@@ -171,7 +171,7 @@ def socket_producer(ip, msg_queue):
             poll_list = poll.poll(10)
             if len(poll_list) == 0:
                 count += 1
-                if count >= 5:
+                if count >= 3:
                     break
             else:
                 count = 0
@@ -197,11 +197,12 @@ def socket_consumer(text, msg_queue):
     poll = select.poll()
     logging.warning('Consumer enter {}'.format(msg_queue.qsize()))
     while thread_flag != 0:
+        my_step = thread_step
+        if my_step > msg_queue.qsize():
+            my_step = msg_queue.qsize()
         try:
-            for i in range(thread_step):
+            for i in range(my_step):
                 se = msg_queue.get(False)
-                if se == "sentinel":
-                    break;
                 se.send(text)
                 poll.register(se.fileno(), select.POLLIN)
                 send_dict[se.fileno()] = se
@@ -212,7 +213,7 @@ def socket_consumer(text, msg_queue):
             poll_list = poll.poll(10)
             if len(poll_list) == 0:
                 count += 1
-                if count >= 5:
+                if count >= 3:
                     break
             else:
                 count = 0
