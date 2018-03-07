@@ -556,6 +556,7 @@ class JDWrapper(object):
             err = se.connect_ex((ip,80))
             poll.register(se.fileno(), select.POLLOUT)
             conn_dict[se.fileno()] = se
+        count = 0
         while True:
             poll_list = poll.poll(10)
             if len(poll_list) == 0:

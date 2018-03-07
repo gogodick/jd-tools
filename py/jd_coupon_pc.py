@@ -13,6 +13,11 @@ import math
 import logging, logging.handlers
 import argparse
 import multiprocessing
+import Queue
+import threading
+import select
+import socket
+import struct
 import re
 from jd_wrapper import JDWrapper
 import sys
@@ -140,6 +145,88 @@ def click_task(coupon_url, id):
     jd.click(logging.WARNING)
     return cnt
 
+thread_flag = 1
+thread_cnt = 0
+thread_step = 256
+def socket_producer(ip, msg_queue):
+    global thread_flag
+    global thread_step
+    conn_dict = {}
+    poll = select.poll()
+    my_step = thread_step
+    logging.warning('Producer enter {}'.format(msg_queue.qsize()))
+    while thread_flag != 0:
+        if msg_queue.qsize() >= 768:
+            continue
+        for i in range(my_step):
+            se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            se.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            se.setblocking(0)
+            err = se.connect_ex((ip,80))
+            se.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
+            poll.register(se.fileno(), select.POLLOUT | select.POLLERR)
+            conn_dict[se.fileno()] = se
+        count = 0
+        while True:
+            poll_list = poll.poll(10)
+            if len(poll_list) == 0:
+                count += 1
+                if count >= 5:
+                    break
+            else:
+                count = 0
+            for fd, event in poll_list:
+                if event & select.POLLOUT:
+                    poll.unregister(fd)
+                    se = conn_dict.pop(fd)
+                    msg_queue.put(se)
+                elif event & select.POLLERR:
+                    poll.unregister(fd)
+                    se = conn_dict.pop(fd)
+                    se.close()
+    for fd,se in conn_dict.items():
+        se.close()
+    logging.warning('Producer exit {}'.format(msg_queue.qsize()))
+    return
+
+def socket_consumer(text, msg_queue):
+    global thread_flag
+    global thread_cnt
+    global thread_step
+    send_dict = {}
+    poll = select.poll()
+    logging.warning('Consumer enter {}'.format(msg_queue.qsize()))
+    while thread_flag != 0:
+        try:
+            for i in range(thread_step):
+                se = msg_queue.get(False)
+                if se == "sentinel":
+                    break;
+                se.send(text)
+                poll.register(se.fileno(), select.POLLIN)
+                send_dict[se.fileno()] = se
+        except Exception, e:
+            pass
+        count = 0
+        while True:
+            poll_list = poll.poll(10)
+            if len(poll_list) == 0:
+                count += 1
+                if count >= 5:
+                    break
+            else:
+                count = 0
+            for fd, event in poll_list:
+                if event & select.POLLIN | select.POLLHUP | select.POLLERR:
+                    poll.unregister(fd)
+                    se = send_dict.pop(fd)
+                    se.close()
+                    thread_cnt += 1
+    for fd,se in send_dict.items():
+        se.close()
+    logging.warning('Consumer exit {}'.format(msg_queue.qsize()))
+    return
+
 if __name__ == '__main__':
     # help message
     parser = argparse.ArgumentParser(description='Simulate to login Jing Dong, and click coupon')
@@ -184,6 +271,30 @@ if __name__ == '__main__':
             logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
             logging.warning(u'运行{}秒，点击{}次'.format(run_time, cnt))
             jd.my_click(logging.WARNING)
+    elif options.process == 2:
+        ip, text = jd.url_to_request(jd.coupon_url)
+        if None == ip:
+            logging.warning("socket_get_fast failed")
+        else:
+            thread_flag = 1
+            thread_cnt = 0
+            msg_queue = Queue.Queue(2048)
+            t1 = threading.Thread(target=socket_producer, args=(ip, msg_queue,))
+            t2 = threading.Thread(target=socket_consumer, args=(text, msg_queue,))
+            target = (options.hour * 3600) + (options.minute * 60)
+            run_time = jd.duration
+            jd.relax_wait(target)
+            t1.start()
+            jd.busy_wait(target)
+            t2.start()
+            time.sleep(run_time)
+            thread_flag = 0
+            h, m, s = jd.format_local_time()
+            logging.warning(u'#结束时间 {:0>2}:{:0>2}:{:0>2} #目标时间 {:0>2}:{:0>2}:{:0>2}'.format(h, m, s, options.hour, options.minute, 0))
+            logging.warning(u'运行{}秒，点击{}次'.format(run_time, thread_cnt))
+            jd.my_click(logging.WARNING)
+            t1.join()
+            t2.join()
     else:
         jd.click(logging.WARNING)
         target = (options.hour * 3600) + (options.minute * 60)
