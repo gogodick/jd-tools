@@ -17,6 +17,7 @@ import select
 import gzip
 import StringIO
 import errno
+import struct
 import os
 import time
 import re
@@ -567,6 +568,7 @@ class JDWrapper(object):
                 if event & select.POLLOUT:
                     poll.unregister(fd)
                     se = conn_dict[fd]
+                    se.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
                     send_dict[fd] = se
             stop = time.time()
             if (stop - start) > limit:
@@ -592,12 +594,12 @@ class JDWrapper(object):
             for fd, event in poll_list:
                 if event & select.POLLOUT:
                     poll.modify(fd, select.POLLIN | select.POLLHUP | select.POLLERR)
+                    se.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
                     se = send_dict[fd]
                     se.send(text)
                 elif event & select.POLLIN | select.POLLHUP | select.POLLERR:
                     poll.unregister(fd)
                     se = send_dict[fd]
-                    se.shutdown(socket.SHUT_RDWR)
                     se.close()
                     del send_dict[fd]
                     good += 1
@@ -611,7 +613,6 @@ class JDWrapper(object):
             if (stop - start) > limit:
                 break
         for fd,se in send_dict.items():
-            se.shutdown(socket.SHUT_RDWR)
             se.close()
         return good
 
