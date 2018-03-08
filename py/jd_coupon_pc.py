@@ -203,7 +203,7 @@ def socket_consumer(text, msg_queue):
         try:
             for i in range(my_step):
                 se = msg_queue.get(False)
-                se.send(text)
+                length = se.send(text)
                 poll.register(se.fileno(), select.POLLIN)
                 send_dict[se.fileno()] = se
         except Exception, e:
@@ -225,7 +225,11 @@ def socket_consumer(text, msg_queue):
                     thread_cnt += 1
     for fd,se in send_dict.items():
         se.close()
-    logging.warning('Consumer exit {}'.format(msg_queue.qsize()))
+    my_step = msg_queue.qsize()
+    logging.warning('Consumer exit {}'.format(my_step))
+    for i in range(my_step):
+        se = msg_queue.get(False)
+        se.close()
     return
 
 if __name__ == '__main__':
