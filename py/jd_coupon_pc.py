@@ -192,9 +192,6 @@ def socket_producer(ip, msg_queue):
 def socket_consumer(text, msg_queue):
     global thread_flag
     global thread_cnt
-    global thread_step
-    send_dict = {}
-    poll = select.poll()
     logging.warning('Consumer enter {}'.format(msg_queue.qsize()))
     while thread_flag != 0:
         my_step = thread_step
@@ -204,27 +201,10 @@ def socket_consumer(text, msg_queue):
             for i in range(my_step):
                 se = msg_queue.get(False)
                 length = se.send(text)
-                poll.register(se.fileno(), select.POLLIN)
-                send_dict[se.fileno()] = se
+                se.close()
+                thread_cnt += 1
         except Exception, e:
             pass
-        count = 0
-        while True:
-            poll_list = poll.poll(10)
-            if len(poll_list) == 0:
-                count += 1
-                if count >= 3:
-                    break
-            else:
-                count = 0
-            for fd, event in poll_list:
-                if event & select.POLLIN | select.POLLHUP | select.POLLERR:
-                    poll.unregister(fd)
-                    se = send_dict.pop(fd)
-                    se.close()
-                    thread_cnt += 1
-    for fd,se in send_dict.items():
-        se.close()
     my_step = msg_queue.qsize()
     logging.warning('Consumer exit {}'.format(my_step))
     for i in range(my_step):
