@@ -548,7 +548,7 @@ class JDWrapper(object):
         return text
 
     def socket_prepare(self, ip, limit):
-        count = 1024
+        count = 64
         conn_dict = {}
         send_dict = {}
         poll = select.poll()
@@ -563,12 +563,6 @@ class JDWrapper(object):
         count = 0
         while True:
             poll_list = poll.poll(10)
-            if len(poll_list) == 0:
-                count += 1
-                if count >= 10:
-                    break
-            else:
-                count = 0
             for fd, event in poll_list:
                 if event & select.POLLOUT:
                     poll.unregister(fd)
@@ -583,19 +577,13 @@ class JDWrapper(object):
     def socket_run(self, send_dict, ip, text, limit):
         poll = select.poll()
         start = time.time()
+        print len(send_dict)
         for fd,se in send_dict.items():
             se.send(text)
             poll.register(fd, select.POLLIN | select.POLLHUP | select.POLLERR)
-        count = 0
         good = 0
         while True:
             poll_list = poll.poll(10)
-            if len(poll_list) == 0:
-                count += 1
-                if count >= 10:
-                    break
-            else:
-                count = 0
             for fd, event in poll_list:
                 if event & select.POLLOUT:
                     poll.modify(fd, select.POLLIN | select.POLLHUP | select.POLLERR)

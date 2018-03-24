@@ -147,7 +147,7 @@ def click_task(coupon_url, id):
 
 thread_flag = 1
 thread_cnt = 0
-thread_step = 256
+thread_step = 16
 def socket_producer(ip, msg_queue):
     global thread_flag
     global thread_step
@@ -156,7 +156,7 @@ def socket_producer(ip, msg_queue):
     my_step = thread_step
     logging.warning('Producer enter {}'.format(msg_queue.qsize()))
     while thread_flag != 0:
-        if msg_queue.qsize() >= 768:
+        if msg_queue.qsize() >= 256:
             continue
         for i in range(my_step):
             se = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -168,10 +168,20 @@ def socket_producer(ip, msg_queue):
             conn_dict[se.fileno()] = se
         count = 0
         while True:
-            poll_list = poll.poll(10)
+            if len(conn_dict) < (my_step / 4):
+                break
+            try:
+                poll_list = poll.poll(10)
+            except Exception, e:
+                logging.error('Exp {0} : {1}'.format(FuncName(), e))
+                print "queue {}, conn {}".format(msg_queue.qsize(), len(conn_dict))
+                break
             if len(poll_list) == 0:
                 count += 1
-                if count >= 3:
+                if count >= 20:
+                    for i in range(len(conn_dict)):
+                        fd,se = conn_dict.popitem()
+                        se.close()
                     break
             else:
                 count = 0
@@ -192,6 +202,8 @@ def socket_producer(ip, msg_queue):
 def socket_consumer(text, msg_queue):
     global thread_flag
     global thread_cnt
+    send_dict = {}
+    poll = select.poll()
     logging.warning('Consumer enter {}'.format(msg_queue.qsize()))
     while thread_flag != 0:
         my_step = thread_step
@@ -201,12 +213,36 @@ def socket_consumer(text, msg_queue):
             for i in range(my_step):
                 se = msg_queue.get(False)
                 length = se.send(text)
-                se.close()
-                thread_cnt += 1
+                poll.register(se.fileno(), select.POLLIN | select.POLLERR)
+                send_dict[se.fileno()] = se
         except Exception, e:
             pass
+        count = 0
+        while True:
+            if len(send_dict) < (my_step / 4):
+                break
+            poll_list = poll.poll(10)
+            if len(poll_list) == 0:
+                count += 1
+                if count >= 20:
+                    for i in range(len(send_dict)):
+                        fd,se = send_dict.popitem()
+                        se.close()
+                    break
+            else:
+                count = 0
+            for fd, event in poll_list:
+                if event & select.POLLIN:
+                    poll.unregister(fd)
+                    se = send_dict.pop(fd)
+                    se.close()
+                    thread_cnt += 1
+                elif event & select.POLLERR:
+                    poll.unregister(fd)
+                    se = send_dict.pop(fd)
+                    se.close()
     my_step = msg_queue.qsize()
-    logging.warning('Consumer exit {}'.format(my_step))
+    logging.warning('Consumer exit {}, click {}'.format(my_step, thread_cnt))
     for i in range(my_step):
         se = msg_queue.get(False)
         se.close()
