@@ -514,7 +514,11 @@ class JDWrapper(object):
     
     def socket_read(self, se):
         buffer = []  
+        start = time.time()
         while True:  
+            current = time.time()
+            if current - start > 1.0:
+                return None
             d = se.recv(1024)  
             if d:  
                 buffer.append(d)  
