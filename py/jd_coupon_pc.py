@@ -33,8 +33,8 @@ class JDCoupon(JDWrapper):
     '''
     wait_interval = 1
     wait_delay = 10
-    duration = 2
-    start_limit = 1
+    duration = 1
+    start_limit = 0.5
     def setup(self, key, role_id):
         base_urls = (
             "http://coupon.jd.com/ilink/couponSendFront/send_index.action",
