@@ -388,7 +388,7 @@ class JDSign(JDWrapper):
             return False
 
     def mobile_sign_shake(self):
-        sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/shake0801/shake2award.action'
+        sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/shake0801/04/shake2award.action'
         logging.info(u'签到京东摇一摇')
         try:
             sid = ''
