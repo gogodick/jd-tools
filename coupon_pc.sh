@@ -1,8 +1,8 @@
-KEY="3545d7f6998241578e13c22e0c6dfc91"
-ROLEID="10801251"
-HOUR=12
+KEY="ee69bacb1ddc469ca5bf7c6f183d4cd3"
+ROLEID="11064332"
+HOUR=10
 MINUTE=00
-PROCESS=16
+PROCESS=4
 FILE="pc_coupon.txt"
 if [ -e $FILE ]; then
     rm -f $FILE
