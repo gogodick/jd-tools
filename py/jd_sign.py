@@ -306,6 +306,33 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_get5coin(self):
+        sign_url = 'http://ms.jr.jd.com/newjrmactivity/base/appdownload/lotteryBySmart.action'
+        logging.info(u'签到每天5钢镚')
+        try:
+            headers = {'Referer': 'https://m.jr.jd.com/activity/brief/get5coin/index2.html?sid='}
+            response = self.sess.post(sign_url, headers=headers)
+            resp_json = response.json()
+            print resp_json
+            if resp_json['resultCode'] == 0:
+                sign_success = resp_json['resultData']['result']
+                if sign_success:
+                    logging.info('领取成功, 获得 {} 京豆.'.format(resp_json['resultData']['num']))
+                else:
+                    message = resp_json['resultData'].get('msg') or resp_json.get('resultMsg')
+                    logging.info('领取结果: {}'.format(message))
+                    if resp_json['resultData'].get('code') == '03':
+                        # 当 code 为 03 时, 表示今天已领过了, 因为领取前无法知道是否领过, 此处也当做任务成功返回
+                        sign_success = True
+                return sign_success
+            else:
+                message = resp_json.get('resultMsg')
+                logging.error('领取失败: {}'.format(message))
+                return False
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
     def mobile_sign_jrdraw(self):
         index_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/myRewardsAndLeftTimes1'
         sign_url = 'http://ms.jr.jd.com/gw/generic/activity/h5/m/recieveRewad1'
@@ -358,7 +385,7 @@ class JDSign(JDWrapper):
                     sid = ck.value
                     break
             data = {
-                'activityno': '16-133180228151722091835',
+                'activityno': '16-122180426171236424521',
                 'sid': sid,
             }
             response = self.sess.get(sign_url, params=data)
