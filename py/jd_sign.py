@@ -314,17 +314,9 @@ class JDSign(JDWrapper):
             response = self.sess.post(sign_url, headers=headers)
             resp_json = response.json()
             print resp_json
-            if resp_json['resultCode'] == 0:
-                sign_success = resp_json['resultData']['result']
-                if sign_success:
-                    logging.info('领取成功, 获得 {} 京豆.'.format(resp_json['resultData']['num']))
-                else:
-                    message = resp_json['resultData'].get('msg') or resp_json.get('resultMsg')
-                    logging.info('领取结果: {}'.format(message))
-                    if resp_json['resultData'].get('code') == '03':
-                        # 当 code 为 03 时, 表示今天已领过了, 因为领取前无法知道是否领过, 此处也当做任务成功返回
-                        sign_success = True
-                return sign_success
+            if resp_json['status'] == 0:
+                logging.info('领取成功, {}'.format(resp_json['resultMsg']))
+                return True
             else:
                 message = resp_json.get('resultMsg')
                 logging.error('领取失败: {}'.format(message))
