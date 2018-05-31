@@ -666,6 +666,18 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_baitiao(self):
+        sign_url = 'http://payhome.jd.com//my/raffle/getPrize?fp=dd11993c3ad1e774f77e5fb7a4355000&eid=H7Y64K74KN2FDCGPXUIWLKZ6CY6Q2CTUNQWIADBKBOJ2VEUZKJL3EAEWJZR3KEXYNTPECSZUV2GTVEJ7OZD7RCHJSU'
+        logging.info(u'签到京东白条抽奖')
+        try:
+            for i in range(5):
+                response = self.sess.get(sign_url)
+                resp_json = response.json()
+                logging.info('领取结果: {}'.format(resp_json['msg']))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
