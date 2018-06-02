@@ -110,8 +110,8 @@ class JDCoupon(JDWrapper):
         self.set_local_time()
         while 1:
             if counter >= self.wait_delay:
-                #self.click(logging.INFO)
-                self.my_click(logging.INFO)
+                self.click(logging.INFO)
+                #self.my_click(logging.INFO)
                 counter = 0
             diff = self.compare_local_time(target)
             if (diff <= 60) and (diff >= -60):
