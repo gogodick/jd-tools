@@ -1,8 +1,8 @@
 URL=''
-URL='https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&body=%7B%22activityId%22%3A%22Nrhhv9g3FgxU2SaLLSkCvijS8dc%22%2C%22from%22%3A%22H5node%22%2C%22scene%22%3A%221%22%2C%22args%22%3A%22key%3D3472bd7400804b01b6d5bd8162289d85%2CroleId%3D10117929%22%2C%22mitemAddrId%22%3A%22%22%2C%22geo%22%3A%7B%22lng%22%3A%22%22%2C%22lat%22%3A%22%22%7D%7D&client=wh5&clientVersion=1.0.0'
+URL='http://payhome.jd.com//my/raffle/exchangeCoupon?couponId=503f1230e350a0a8a919cd1f11102a87&fp=082c4acee50b224decc6aec857003ce2&eid=VR6F2MWREACHLIKZCYWOADH2KVZSFWO5VDYDU7CM2Y2IA27FEPTNEWNE4PELNN4VDZGOKWTFJBONK2Z7G2SSE2HXXY'
 KEY="3472bd7400804b01b6d5bd8162289d85"
 ROLEID="10117929"
-HOUR=20
+HOUR=09
 MINUTE=00
 PROCESS=32
 FILE="mobile_coupon.txt"
