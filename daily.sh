@@ -1,4 +1,4 @@
-CODE="3ee38a2b-f2c5-41b5-aa92-0cc7cbab73d7"
+CODE="58ae2fca-88ce-4f44-9838-94ef4c490258"
 rm -rf cookies
 python py/jd_lottery.py -c $CODE
 python py/jd_sign.py
