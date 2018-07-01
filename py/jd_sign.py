@@ -38,35 +38,14 @@ class JDSign(JDWrapper):
         return res
 
     def pc_sign_vip(self):
-        index_url = 'https://vip.jd.com'
-        sign_url = 'https://vip.jd.com/common/signin.html'
+        sign_url = 'https://vip.jd.com/sign/index'
 
         logging.info(u'签到京东会员')
         try:
-            html = self.sess.get(index_url).text
-            pattern = re.compile(r'token: "(?P<token>\d+)"')
-            res = pattern.search(html)
-            if res == None:
-                logging.warning(u'没有找到token')
-                return False
-            if len(res.group('token')) == 0:
-                logging.warning(u'没有找到token')
-                return False
-            payload = {'token': res.group('token')}
-            response = self.sess.get(sign_url, params=payload).json()
-            if response['success']:
-                # 签到成功, 获得若干个京豆
-                if 'jdnum' in response['result']:
-                    beans_get = response['result']['jdnum']
-                    logging.info(u'签到成功, 获得 {} 个京豆.'.format(beans_get))
-                else:
-                    logging.warning(u'{}'.format(response))
-                return True
-            else:
-                # 例如: 您已签到过，请勿重复签到！
-                message = response['resultTips']
-                logging.error(u'签到失败: {}'.format(message))
-                return False
+            html = self.sess.get(sign_url).text
+            soup = bs4.BeautifulSoup(html, "html.parser")
+            tags = soup.select('div.active-info')
+            logging.warning(u'{}'.format(tags[0].text.strip(' \t\r\n')))
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
