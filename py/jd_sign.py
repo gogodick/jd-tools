@@ -484,6 +484,28 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_welfare(self):
+        logging.info(u'签到京东每日福利')
+        from datetime import datetime,date
+        week_day = datetime.now().weekday()
+        day1 = week_day
+        if day1 == 0:
+            day1 = 7
+        day2 = week_day + 1
+        sign_url = 'https://s.m.jd.com/activemcenter/muserwelfare/sign?num={}&active=Myonghufliqiandao2&level={}'.format(day1, day1)
+        try:
+            response = self.sess.get(sign_url)
+            logging.info('领取结果: {}'.format(response.text))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+        time.sleep(1)
+        sign_url = 'https://s.m.jd.com/activemcenter/muserwelfare/sign?num={}&active=Myonghufliqiandao2&level={}'.format(day2, day2)
+        try:
+            response = self.sess.get(sign_url)
+            logging.info('领取结果: {}'.format(response.text))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+
     def get_token(self):
         e = ''
         for ck in self.sess.cookies:
