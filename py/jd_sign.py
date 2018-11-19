@@ -121,21 +121,21 @@ class JDSign(JDWrapper):
             return False
 
     def mobile_sign_gb(self):
-        sign_url = 'https://ms.jr.jd.com/gw/generic/base/h5/m/baseSignInEncrypt'
+        sign_url = 'https://ms.jr.jd.com/gw/generic/hy/h5/m/signIn'
         logging.info(u'签到京东客户端钢蹦')
         try:
             payload = {
-                'reqData': '{}',
-                'source': 'jrm'
+                'reqData': '{"channelSource":"JRAPP"}',
             }
             resp = self.sess.post(sign_url, data=payload)
             as_json = resp.json()
-            if 'resultData' in as_json:
+            print as_json
+            if 'resultData' in as_json and 'resBusiData' in as_json['resultData']:
                 result_data = as_json['resultData']
-                sign_success = result_data['isSuccess']
-                message = result_data['showMsg']
+                sign_success = result_data['resBusiData']['isSuccess']
+                message = result_data['resBusiMsg']
                 # 参见 daka_app_min.js, 第 1893 行
-                continuity_days = result_data['continuityDays']
+                continuity_days = result_data['resBusiData']['continuityDays']
                 if continuity_days > 1:
                     message += '; 签到天数: {}'.format(continuity_days)
             else:
@@ -484,6 +484,7 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    '''
     def mobile_sign_welfare(self):
         logging.info(u'签到京东每日福利')
         from datetime import datetime,date
@@ -505,6 +506,7 @@ class JDSign(JDWrapper):
             logging.info('领取结果: {}'.format(response.text))
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
+    '''
 
     def get_token(self):
         e = ''
