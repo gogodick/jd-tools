@@ -69,7 +69,6 @@ class JDSign(JDWrapper):
                         num = as_json['data']['signData']['accountBalance']
                         logging.error(u'今日已签到: 账户有{}个钢蹦'.format(num))
                         return False
-            print as_json
             return False
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
@@ -129,7 +128,6 @@ class JDSign(JDWrapper):
             }
             resp = self.sess.post(sign_url, data=payload)
             as_json = resp.json()
-            print as_json
             if 'resultData' in as_json and 'resBusiData' in as_json['resultData']:
                 result_data = as_json['resultData']
                 sign_success = result_data['resBusiData']['isSuccess']
@@ -143,31 +141,6 @@ class JDSign(JDWrapper):
                 message = as_json.get('resultMsg') or as_json.get('resultMessage')
             logging.info('打卡成功: {}; Message: {}'.format(sign_success, message))
             return sign_success
-        except Exception as e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-
-    def mobile_sign_jr(self):
-        sign_url = 'http://home.jdpay.com/my/signIn/'
-        logging.info(u'签到京东金融')
-        try:
-            sid = ''
-            for ck in self.sess.cookies:
-                if ck.name == 'sid':
-                    sid = ck.value
-                    break
-            data = {
-                'sid': sid,
-            }
-            response = self.sess.get(sign_url, params=data)
-            resp_json = response.json()
-            if 'data' in resp_json:
-                if 'resBusiData' in resp_json['data']:
-                    logging.info('签到成功: {}'.format(resp_json['data']['resBusiData']))
-                else:
-                    logging.info('签到结果: {}'.format(resp_json['data']['resBusiMsg']))
-            else:
-                logging.info('无法识别: {}'.format(resp_json))
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
@@ -342,6 +315,34 @@ class JDSign(JDWrapper):
                 message = resp_json.get('resultMsg')
                 logging.error('领取失败: {}'.format(message))
                 return False
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
+    def mobile_sign_jrcard(self):
+        sign_url = 'http://gpm.jd.com/signin_new/choice'
+        headers = {'Referer': 'http://active.jd.com/forever/flipDraw/html/index.html'}
+        logging.info(u'签到京东金融翻牌')
+        try:
+            sid = ''
+            for ck in self.sess.cookies:
+                if ck.name == 'sid':
+                    sid = ck.value
+                    break
+            data = {
+                'sid': sid,
+                'position': random.randint(1, 6),
+                'uaType': 4,
+                'callback': 'Zepto1542776537541',
+            }
+            response = self.sess.get(sign_url, params=data, headers=headers)
+            print response.text
+            pattern = re.compile(r'"result":(?P<result>.\d*)')
+            res = pattern.search(response.text)
+            if res == None:
+                logging.warning(u'没有找到result');
+                return False
+            logging.info('翻牌结果:{}'.format(res.group('result')))
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
