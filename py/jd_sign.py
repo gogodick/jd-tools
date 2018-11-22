@@ -684,6 +684,23 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_smallwool(self):
+        sign_url = 'http://wq.jd.com/smallwool/xymseven/get?active=XYM_lottery_packet2&env=m'
+        headers = {'Referer': 'http://wqs.jd.com/wxsq_project/xym/dailyJDBeans/xym_dailyJDBeans.html'}
+        logging.info(u'签到京东小羊毛')
+        try:
+            response = self.sess.get(sign_url, headers=headers)
+            pattern = re.compile(r'"errMsg":"(?P<errMsg>.*)"')
+            res = pattern.search(response.text)
+            if res == None:
+                logging.warning(u'没有找到errMsg');
+                return False
+            errMsg = res.group('errMsg')
+            logging.info('领取结果: {}'.format(errMsg))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
