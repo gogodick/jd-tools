@@ -701,6 +701,45 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_ticketbonus(self):
+        sign_url = 'http://wq.jd.com/active/active_draw'
+        headers = {'Referer': 'http://wqs.jd.com/wxsq_project/xym/ticketBonus/xym_ticketBonus.html'}
+        logging.info(u'签到京东社群抽奖')
+        try:
+            data = {
+                'active': 'XYM_lottery_act1121',
+                'ext': 'hj:m',
+                'g_login_type': 0,
+                'callback': 'jsonpCBKC',
+            }
+            response = self.sess.get(sign_url, params=data, headers=headers)
+            print response.text
+            pattern = re.compile(r'"ret" : (?P<ret>.*),')
+            res = pattern.search(response.text)
+            if res == None:
+                logging.warning(u'没有找到ret');
+                return False
+            ret = res.group('ret')
+            pattern = re.compile(r'"awardcode" : "(?P<awardcode>.*)"')
+            res = pattern.search(response.text)
+            if res == None:
+                logging.warning(u'没有找到awardcode');
+                return False
+            awardcode = res.group('awardcode')
+            pattern = re.compile(r'"retmsg" : "(?P<retmsg>.*)"')
+            res = pattern.search(response.text)
+            if res == None:
+                logging.warning(u'没有找到retmsg');
+                return False
+            retmsg = res.group('retmsg')
+            if ret == 0:
+                logging.info('领取成功: {}'.format(awardcode))
+            else:
+                logging.info('领取失败: {}'.format(retmsg))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
