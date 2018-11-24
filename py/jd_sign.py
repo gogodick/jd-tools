@@ -732,7 +732,7 @@ class JDSign(JDWrapper):
                 logging.warning(u'没有找到retmsg');
                 return False
             retmsg = res.group('retmsg')
-            if ret == 0:
+            if ret == '0':
                 logging.info('领取成功: {}'.format(awardcode))
             else:
                 logging.info('领取失败: {}'.format(retmsg))
