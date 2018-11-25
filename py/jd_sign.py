@@ -713,7 +713,6 @@ class JDSign(JDWrapper):
                 'callback': 'jsonpCBKC',
             }
             response = self.sess.get(sign_url, params=data, headers=headers)
-            print response.text
             pattern = re.compile(r'"ret" : (?P<ret>.*),')
             res = pattern.search(response.text)
             if res == None:
