@@ -74,29 +74,8 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
-    def pick_poker(self):
-        try:
-            poker_url = 'http://api.m.jd.com/client.action?functionId=getCardResult&client=ld&clientVersion=1.0.0&body={"index":'
-            poker_to_pick = random.randint(1, 6)
-            poker_url += str(poker_to_pick)
-            poker_url += '}'
-            headers = {'Referer': "http://bean.m.jd.com/"}
-            resp = self.sess.get(poker_url)
-            pick_success = False
-            as_json = resp.json()
-            pick_success = not as_json['code']
-            if 'data' in as_json:
-                message = as_json['data']['signText']
-                award = as_json['data']['signAward']
-                message = message.replace(u'signAward', award)
-                logging.info('翻牌成功: {}; Message: {}'.format(pick_success, message))
-            return pick_success
-        except Exception as e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-
     def mobile_sign_bean(self):
-        sign_url = 'http://api.m.jd.com/client.action?functionId=signBeanStart&client=ld&clientVersion=1.0.0'
+        sign_url = 'https://api.m.jd.com/client.action?functionId=signBeanIndex&appid=ld'
         logging.info(u'签到京东客户端')
         try:
             resp = self.sess.get(sign_url)
@@ -104,14 +83,10 @@ class JDSign(JDWrapper):
             if resp.ok:
                 as_json = resp.json()
                 sign_success = (as_json['data']['status'] == 1)
-                message = as_json['data']['signShowBean']['signText']
-                award = as_json['data']['signShowBean']['signAward']
-                message = message.replace(u'signAward', award)
+                message = as_json['data']['dailyAward']['title']
+                award = as_json['data']['dailyAward']['beanAward']['beanCount']
+                message = message + award
                 logging.info('签到成功: {}; Message: {}'.format(sign_success, message))
-                # "complated": 原文如此, 服务端的拼写错误...
-                poker_picked = as_json['data']['signShowBean']['complated']
-                if not poker_picked:
-                    self.pick_poker()
             else:
                 logging.error('签到失败: Status code: {}; Reason: {}'.format(resp.status_code, resp.reason))
             return sign_success
@@ -169,36 +144,6 @@ class JDSign(JDWrapper):
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
-
-    '''
-    def mobile_sign_redpacket(self):
-        sign_url = 'https://ms.jr.jd.com/gw/generic/activity/h5/m/receiveZhiBoXjkRedPacket'
-        logging.info(u'签到京东直播红包')
-        try:
-            # 参见 red_packet_index.js
-            payload = {
-                'reqData': '{"activityCode":"ying_yong_bao_618"}',
-            }
-            response = self.sess.post(sign_url, data=payload).json()
-            if response['resultCode'] == 0:
-                sign_success = response['resultData']['success']
-                if sign_success:
-                    logging.info('领取成功, 获得 {} 元.'.format(response['resultData']['data']))
-                else:
-                    message = response['resultData'].get('msg') or response.get('resultMsg')
-                    logging.info('领取结果: {}'.format(message))
-                    if response['resultData'].get('code') == '03':
-                        # 当 code 为 03 时, 表示今天已领过了, 因为领取前无法知道是否领过, 此处也当做任务成功返回
-                        sign_success = True
-                return sign_success
-            else:
-                message = response.get('resultMsg')
-                logging.error('领取失败: {}'.format(message))
-                return False
-        except Exception as e:
-            logging.error('Exp {0} : {1}'.format(FuncName(), e))
-            return False
-    '''
 
     def mobile_sign_cash(self):
         sign_url = 'http://wyyl.jd.com/xjk/receiveReward'
