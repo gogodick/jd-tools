@@ -461,8 +461,11 @@ class JDWrapper(object):
             if 'jd.com' not in resp.url:
                 logging.error('通过 QQ 登录京东失败.')
                 return False
-            logging.warning('通过 QQ 登录京东成功.')        
-            return True
+            logging.warning('通过 QQ 登录京东成功.')
+            for ck in self.sess.cookies:
+                if ck.name == 'pt_key':
+                    return True     
+            return False
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
