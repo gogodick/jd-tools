@@ -319,7 +319,7 @@ class JDWrapper(object):
         e = 0
         for i in range(len(t)):
             e+=(e<<5)+ord(t[i])
-        return 2147483647&e
+        return str(2147483647&e)
 
     def g_tk(self):
         h = 5381
@@ -379,6 +379,9 @@ class JDWrapper(object):
             redirect_uri = redirect_uri.replace('%3F','?')
             redirect_uri = redirect_uri.replace('%3D','=')
             state = res.group('state')
+            
+            xui_url = "https://xui.ptlogin2.qq.com/cgi-bin/xlogin?appid=716027609&daid=383&style=33&login_text=%E6%8E%88%E6%9D%83%E5%B9%B6%E7%99%BB%E5%BD%95&hide_title_bar=1&hide_border=1&target=self&s_url=https%3A%2F%2Fgraph.qq.com%2Foauth2.0%2Flogin_jump&pt_3rd_aid=100273020&pt_feedback_link=http%3A%2F%2Fsupport.qq.com%2Fwrite.shtml%3Ffid%3D780%26SSTAG%3Dwww.360buy.com.appid100273020"
+            resp = self.sess.get(xui_url)
              
             resp = self.sess.get(
                 "https://ssl.ptlogin2.qq.com/ptqrshow", 
@@ -409,10 +412,13 @@ class JDWrapper(object):
                 if ck.name == 'qrsig':
                     qrsig = ck.value
                     break
+            for ck in self.sess.cookies:
+                if ck.name == 'pt_login_sig':
+                    pt_login_sig = ck.value
+                    break
             while retry_times:
                 retry_times -= 1
-                resp = self.sess.get("https://ssl.ptlogin2.qq.com/ptqrlogin", 
-                    params = {
+                data = {
                         'u1': 'https://graph.qq.com/oauth/login_jump',
                         'ptqrtoken': self.hash33(qrsig),
                         'ptredirect': 0,
@@ -421,16 +427,16 @@ class JDWrapper(object):
                         'g': 1,
                         'from_ui': 1,
                         'ptlang': 2052,
-                        'action': 0-0-1498546581374,
-                        'js_ver': 10222,
+                        'action': 0-0-1547295694751,
+                        'js_ver': 10291,
                         'js_type': 1,
-                        'login_sig': '',
+                        'login_sig': pt_login_sig,
                         'pt_uistyle': 40,
                         'aid': 716027609,
                         'daid': 383,
                         'pt_3rd_aid': 100273020
-                    }
-                )
+                }
+                resp = self.sess.get("https://ssl.ptlogin2.qq.com/ptqrlogin", params = data)
                 if resp.status_code != requests.codes.OK:
                     logging.error(u'访问失败')
                     break
@@ -447,6 +453,15 @@ class JDWrapper(object):
                 time.sleep(3)
 
             self.close_image(image_handle)
+
+            pattern = re.compile(r'(?P<check_url>https.*?)\'')
+            res = pattern.search(resp.text)
+            if res == None:
+                logging.error(u'无法匹配URL')
+                return False
+            check_url = res.group('check_url')
+            self.sess.get(check_url)
+            
             data = {
                 'response_type': 'code',
                 'client_id': client_id,
@@ -458,13 +473,11 @@ class JDWrapper(object):
             }
             
             resp = self.sess.post('https://graph.qq.com/oauth2.0/authorize', data=data)
-            if 'jd.com' not in resp.url:
-                logging.error('通过 QQ 登录京东失败.')
-                return False
-            logging.warning('通过 QQ 登录京东成功.')
             for ck in self.sess.cookies:
                 if ck.name == 'pt_key':
-                    return True     
+                    logging.warning('通过 QQ 登录京东成功.')
+                    return True
+            logging.error('通过 QQ 登录京东失败.')
             return False
         except Exception as e:
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
