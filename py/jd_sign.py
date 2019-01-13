@@ -684,6 +684,38 @@ class JDSign(JDWrapper):
             logging.error('Exp {0} : {1}'.format(FuncName(), e))
             return False
 
+    def mobile_sign_turntable(self):
+        sign_url = 'https://api.m.jd.com/client.action'
+        headers = {'Referer': 'https://turntable.m.jd.com/?actId=jgpqtzjhvaoym&appSource=jdhome'}
+        logging.info(u'签到京豆大转盘')
+        try:
+            data = {
+                'functionId': 'lotteryDraw',
+                'body': '{"actId":"jgpqtzjhvaoym","appSource":"jdhome"}',
+                'appid': 'ld',
+                'client': 'android',
+                'clientVersion': '',
+                'networkType': '',
+                'osVersion': '',
+                'uuid': '', 
+            }
+            resp = self.sess.get(sign_url, params=data, headers=headers)
+            resp_json = resp.json()
+            if 'errorMessage' in resp_json:
+                logging.info('领取失败: {}'.format(resp_json['errorMessage']))
+            else:
+                logging.info('领取成功: {}'.format(resp_json['data']['toastTxt']))
+            time.sleep(2)
+            resp = self.sess.get(sign_url, params=data, headers=headers)
+            resp_json = resp.json()
+            if 'errorMessage' in resp_json:
+                logging.info('领取失败: {}'.format(resp_json['errorMessage']))
+            else:
+                logging.info('领取成功: {}'.format(resp_json['data']['toastTxt']))
+        except Exception as e:
+            logging.error('Exp {0} : {1}'.format(FuncName(), e))
+            return False
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - (%(levelname)s) %(message)s', datefmt='%H:%M:%S')  
 
