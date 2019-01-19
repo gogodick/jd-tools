@@ -489,10 +489,12 @@ class JDWrapper(object):
             if self.mobile_verify_login():
                 return True
         self.sess.cookies.clear()
-        if not self.mobile_login_by_QR():
-            return False
-        self.save_cookie(self.mobile_cookie_file)
-        return True
+        for i in range(3):
+            if not self.mobile_login_by_QR():
+                continue
+            self.save_cookie(self.mobile_cookie_file)
+            return True        
+        return False
 
     def host_to_ip(self, host):
         try:
