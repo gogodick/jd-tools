@@ -355,16 +355,16 @@ class JDSign(JDWrapper):
             return False
 
     def mobile_sign_zdouble(self):
-        index_url = 'http://ljd.m.jd.com/countersign/index.action'
-        sign_url = 'http://ljd.m.jd.com/countersign/receiveAward.json'
+        index_url = 'http://ms.jr.jd.com/gw/generic/jrm/h5/m/signInit'
+        sign_url = 'http://ms.jr.jd.com/gw/generic/jrm/h5/m/getSignAwardJD'
         logging.info(u'签到京东双签')
         try:
             self.sess.get(index_url)
             response = self.sess.get(sign_url)
             resp_json = response.json()
-            if 'res' in resp_json and 'data' in resp_json['res']:
-                data = resp_json['res']['data'][0]
-                logging.info('领取成功: {} {}'.format(data['awardCount'], data['awardName']))
+            if 'resultData' in resp_json and 'awardList' in resp_json['resultData']:
+                data = resp_json['resultData']['awardList'][0]
+                logging.info('领取成功: {} {}'.format(data['count'], data['name']))
             else:
                 logging.info('领取失败: {}'.format(resp_json))
         except Exception as e:
